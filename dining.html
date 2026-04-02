@@ -1,270 +1,893 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=1280, height=720, initial-scale=1.0">
-    <title>Ayatara - Dining Menu</title>
-    <style>
-        * { box-sizing: border-box; }
-        body, html {
-            margin: 0; padding: 0;
-            width: 1280px; height: 720px;
-            background: url('https://wayansumalya.github.io/ayatara/asset/promo-dinig.jpg') no-repeat center center;
-            background-size: cover;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden; 
-            color: #fff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>Hotel TV Portal — LG Procentric Direct v5</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-        .bg-overlay {
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(15,15,15,0.95) 0%, rgba(15,15,15,0.4) 100%);
-            z-index: 1;
-        }
+<!--
+=============================================================
+  LG PROCENTRIC DIRECT v5 — INTEGRATION NOTES
+=============================================================
 
-        /* --- HEADER --- */
-        .header {
-            position: absolute; top: 50px; left: 80px; z-index: 2;
-        }
-        .header h1 {
-            margin: 0; font-size: 48px; color: #D4AF37; 
-            text-transform: uppercase; letter-spacing: 4px; font-weight: 300;
-        }
-        .header p { margin: 5px 0 0 0; font-size: 20px; color: #ccc; }
+  HOW APP LAUNCHING WORKS:
+  ─────────────────────────
+  This portal uses THREE methods in priority order:
 
-        /* --- TOMBOL KEMBALI VISUAL --- */
-        #btn-back {
-            position: absolute; top: 50px; right: 80px; z-index: 5;
-            padding: 15px 30px;
-            background: rgba(20, 20, 20, 0.6);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: #fff; font-size: 22px; font-weight: bold;
-            transition: all 0.3s ease;
-            display: flex; align-items: center; gap: 10px;
-        }
-        
-        /* State Saat Tombol Kembali Fokus */
-        #btn-back.focused {
-            border: 2px solid #D4AF37;
-            background: rgba(212, 175, 55, 0.2);
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-            transform: scale(1.05);
-            color: #D4AF37;
-        }
+  METHOD 1 — ProcentricJS Bridge (PCS-injected)
+    LG Procentric Server injects window.ProcentralJS into every
+    portal page. We call ProcentralJS.launchApp(appId) to open
+    native apps. App IDs are registered in PCS App Management.
+    This is the RECOMMENDED method for Procentric deployments.
 
-        /* --- CARD SLIDER --- */
-        .slider-container {
-            position: absolute; top: 220px; left: 80px; z-index: 2;
-            display: flex; gap: 40px; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+  METHOD 2 — webOS Service API (Direct Device Call)
+    Falls back to window.webOS.service.request() calling
+    com.webos.applicationManager/launch with the webOS app ID.
+    Works on LG webOS 4.x / 5.x TVs without PCS dependency.
 
-        .card {
-            width: 340px; height: 400px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px); 
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px; overflow: hidden;
-            transition: all 0.3s ease;
-            opacity: 0.6; transform: scale(0.95);
-        }
-        
-        .card img { width: 100%; height: 220px; object-fit: cover; }
-        .card-info { padding: 25px; }
-        .card-info h2 { margin: 0 0 10px 0; font-size: 26px; font-weight: 500; }
-        .card-info p { margin: 0; font-size: 16px; color: #aaa; line-height: 1.4; }
+  METHOD 3 — sssp:// URI Scheme (Fallback)
+    Last resort: sssp://v2/apps/launch?appId=... URI scheme.
+    Less reliable on Procentric but works on some firmware.
 
-        /* State Saat Card Fokus */
-        .card.active {
-            opacity: 1; transform: scale(1);
-            border: 2px solid #D4AF37;
-            background: rgba(20, 20, 20, 0.8);
-            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.2);
-        }
+  TV CHANNEL TUNING:
+  ─────────────────
+    Uses ProcentralJS.tuneChannel(channelNum) if available,
+    falls back to webOS luna service com.webos.media/channel.
 
-        /* --- MODAL DETAIL --- */
-        #detail-modal {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); z-index: 10;
-            display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s ease;
-        }
-        #detail-modal.show { display: flex; opacity: 1; }
-        
-        .modal-body {
-            display: flex; width: 1000px; height: 500px;
-            background: #111; border: 1px solid #333; border-radius: 16px;
-            overflow: hidden;
-        }
-        .modal-body img { width: 50%; height: 100%; object-fit: cover; }
-        .modal-text { width: 50%; padding: 50px; display: flex; flex-direction: column; justify-content: center;}
-        .modal-text h2 { color: #D4AF37; font-size: 40px; margin-top: 0; }
-        .modal-text p { font-size: 20px; color: #ddd; line-height: 1.6; flex-grow: 1; }
-        .modal-hint { font-size: 16px; color: #666; text-align: right; }
+  SCREEN MIRRORING:
+  ─────────────────
+    Calls ProcentralJS.launchApp('com.lgsi.miracast') or
+    webOS applicationManager to open Screen Share / Miracast.
 
-    </style>
+  KNOWN WEBOS APP IDs (LG Official):
+  ─────────────────────────────────
+    Netflix         : netflix
+    YouTube         : youtube.leanback.v4
+    Prime Video     : amazon
+    Disney+         : disney
+    HBO Max         : hbo
+    Apple TV+       : com.apple.appletv
+    Spotify         : spotify-beehive
+    Screen Share    : com.lgsi.miracast  (or com.webos.app.miracast)
+    Bluetooth Audio : com.webos.app.bluetooth
+    HDMI 1          : com.webos.app.hdmi1
+    HDMI 2          : com.webos.app.hdmi2
+
+  CONFIGURATION — EDIT THESE:
+  ───────────────────────────
+    See CONFIG object below. Update:
+    - HOTEL_NAME, ROOM_NUMBER, WIFI_SSID, WIFI_PASS
+    - APP_IDS: map friendly names to your PCS-registered App IDs
+      (check PCS Admin → App Management → App List for exact IDs)
+    - CHANNELS: update channel numbers to match your property lineup
+
+  DEPLOYMENT:
+  ───────────
+    1. Host this file on your internal web server
+    2. PCS Admin → Portal Settings → Home URL → set to this file's URL
+    3. Ensure PCS is configured to inject ProcentricJS on portal pages
+    4. Test with LG Magic Remote on an enrolled TV
+=============================================================
+-->
+
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C96C;
+    --gold-dim: rgba(201,168,76,0.15);
+    --bg: #07080C;
+    --bg2: #0E0F17;
+    --bg3: #161824;
+    --surface: rgba(255,255,255,0.04);
+    --surface2: rgba(255,255,255,0.08);
+    --white: #F5F3EE;
+    --muted: rgba(245,243,238,0.42);
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --font-display: 'Cormorant Garamond', serif;
+    --font-ui: 'DM Sans', sans-serif;
+    --t: 0.32s cubic-bezier(.4,0,.2,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--white);font-family:var(--font-ui);}
+
+  /* ── PROCENTRIC STATUS BAR ── */
+  #pcs-status {
+    position:fixed;top:0;left:0;right:0;height:36px;z-index:300;
+    background:rgba(7,8,12,0.96);border-bottom:1px solid rgba(255,255,255,0.05);
+    display:flex;align-items:center;padding:0 28px;gap:16px;
+    font-size:11px;letter-spacing:.08em;
+  }
+  .pcs-dot{width:7px;height:7px;border-radius:50%;background:#374151;}
+  .pcs-dot.ok{background:var(--green);box-shadow:0 0 6px rgba(34,197,94,0.6);}
+  .pcs-dot.warn{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.5);}
+  .pcs-label{color:var(--muted);}
+  .pcs-val{color:var(--white);font-weight:500;}
+  .pcs-sep{color:rgba(255,255,255,0.12);margin:0 4px;}
+  #pcs-status .spacer{flex:1;}
+  #pcs-status .clock-disp{color:var(--gold);font-weight:500;font-size:12px;letter-spacing:.1em;}
+
+  /* ── TOPBAR ── */
+  #topbar {
+    position:fixed;top:36px;left:0;right:0;height:56px;z-index:100;
+    background:linear-gradient(180deg,rgba(7,8,12,0.97) 0%,transparent 100%);
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 52px;backdrop-filter:blur(8px);
+  }
+  #topbar .hotel-name{font-family:var(--font-display);font-size:22px;letter-spacing:.14em;color:var(--gold);text-transform:uppercase;font-weight:400;}
+  #topbar .guest-info{display:flex;align-items:center;gap:20px;}
+  #topbar .guest-tag{font-size:12px;color:var(--muted);letter-spacing:.04em;}
+  #topbar .guest-tag strong{color:var(--white);}
+  #topbar .weather-tag{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:7px;}
+
+  /* ── HOME ── */
+  #home-screen{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:flex-end;transition:opacity .5s,transform .5s;}
+  #hero-bg{position:absolute;inset:0;z-index:0;overflow:hidden;
+    background:radial-gradient(ellipse 70% 55% at 75% 25%,rgba(42,100,200,0.13) 0%,transparent 60%),
+               radial-gradient(ellipse 55% 70% at 15% 85%,rgba(201,168,76,0.09) 0%,transparent 55%),
+               linear-gradient(155deg,#090b14 0%,#07080C 100%);}
+  #hero-bg::before{content:'';position:absolute;inset:0;
+    background-image:repeating-linear-gradient(0deg,transparent,transparent 63px,rgba(201,168,76,0.025) 63px,rgba(201,168,76,0.025) 64px),
+      repeating-linear-gradient(90deg,transparent,transparent 63px,rgba(201,168,76,0.025) 63px,rgba(201,168,76,0.025) 64px);}
+  #orb1{position:absolute;top:-180px;right:-180px;width:650px;height:650px;background:radial-gradient(circle,rgba(42,100,200,0.15) 0%,transparent 70%);border-radius:50%;animation:floatA 9s ease-in-out infinite;}
+  #orb2{position:absolute;bottom:-100px;left:10%;width:400px;height:400px;background:radial-gradient(circle,rgba(201,168,76,0.08) 0%,transparent 70%);border-radius:50%;animation:floatB 12s ease-in-out infinite;}
+  @keyframes floatA{0%,100%{transform:translate(0,0)}50%{transform:translate(-25px,28px)}}
+  @keyframes floatB{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-20px)}}
+
+  .hero-content{position:relative;z-index:1;padding:0 72px 44px;display:flex;align-items:flex-end;justify-content:space-between;}
+  .welcome-tag{font-size:11px;letter-spacing:.28em;color:var(--gold);text-transform:uppercase;margin-bottom:12px;font-weight:500;display:flex;align-items:center;gap:10px;}
+  .welcome-tag::before{content:'';display:block;width:28px;height:1px;background:var(--gold);}
+  .hero-title{font-family:var(--font-display);font-size:68px;font-weight:300;line-height:1;letter-spacing:-.01em;}
+  .hero-title em{font-style:italic;color:var(--gold-light);}
+  .hero-sub{font-size:14px;color:var(--muted);font-weight:300;letter-spacing:.04em;margin-top:12px;max-width:400px;}
+
+  .promo-card{background:rgba(201,168,76,0.09);border:1px solid rgba(201,168,76,0.28);border-radius:var(--radius);padding:24px 28px;max-width:320px;backdrop-filter:blur(14px);}
+  .promo-card .pb{font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;}
+  .promo-card h3{font-family:var(--font-display);font-size:22px;font-weight:400;line-height:1.3;margin-bottom:8px;}
+  .promo-card p{font-size:12px;color:var(--muted);line-height:1.7;}
+  .promo-cta{margin-top:14px;display:inline-block;background:var(--gold);color:#06070b;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:8px 20px;border-radius:100px;cursor:pointer;transition:var(--t);}
+  .promo-cta:hover{background:var(--gold-light);}
+
+  /* ── NAV GRID ── */
+  #nav-grid{position:relative;z-index:1;padding:0 72px 28px;display:flex;gap:10px;}
+  .nav-card{flex:1;min-width:0;height:86px;background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;transition:var(--t);position:relative;overflow:hidden;backdrop-filter:blur(14px);}
+  .nav-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--nc,var(--gold)) 0%,transparent 60%);opacity:0;transition:var(--t);}
+  .nav-card:hover::before,.nav-card.active::before{opacity:0.13;}
+  .nav-card:hover,.nav-card.active{border-color:var(--nc,var(--gold));transform:translateY(-3px);box-shadow:0 10px 36px rgba(0,0,0,.45);}
+  .nav-icon{font-size:22px;transition:var(--t);}
+  .nav-card:hover .nav-icon{transform:scale(1.14);}
+  .nav-label{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:var(--t);}
+  .nav-card:hover .nav-label,.nav-card.active .nav-label{color:var(--white);}
+
+  /* ── ROOM STRIP ── */
+  #room-strip{position:fixed;bottom:0;left:0;right:0;z-index:50;background:linear-gradient(0deg,rgba(7,8,12,0.98) 0%,transparent 100%);padding:14px 72px 18px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(8px);}
+  .rc{background:var(--surface);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:8px 18px;font-size:11px;font-weight:500;cursor:pointer;transition:var(--t);display:flex;align-items:center;gap:7px;color:var(--muted);}
+  .rc:hover{background:var(--surface2);color:var(--white);border-color:rgba(255,255,255,0.18);}
+  .rc.emergency{color:var(--red);border-color:rgba(239,68,68,.3);}
+  .rc.emergency:hover{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.6);}
+  #room-strip .spacer{flex:1;}
+  .room-badge{font-size:11px;color:var(--muted);letter-spacing:.1em;}
+
+  /* ── PANELS ── */
+  .panel{position:fixed;inset:0;z-index:20;background:var(--bg);display:none;flex-direction:column;overflow:hidden;}
+  .panel.open{display:flex;animation:pIn .38s cubic-bezier(.4,0,.2,1);}
+  @keyframes pIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+  .ph{padding:52px 72px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;}
+  .ph-left{display:flex;align-items:center;gap:18px;}
+  .ph-icon{font-size:34px;}
+  .ph-title{font-family:var(--font-display);font-size:38px;font-weight:300;}
+  .ph-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  .back-btn{background:var(--surface2);border:1px solid rgba(255,255,255,0.09);border-radius:100px;padding:10px 22px;cursor:pointer;font-size:12px;font-family:var(--font-ui);color:var(--muted);transition:var(--t);display:flex;align-items:center;gap:8px;}
+  .back-btn:hover{color:var(--white);border-color:rgba(255,255,255,0.2);}
+  .pb{flex:1;overflow-y:auto;padding:32px 72px 44px;}
+  .pb::-webkit-scrollbar{width:3px;}
+  .pb::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.09);border-radius:2px;}
+
+  /* ── API STATUS BADGE ── */
+  .api-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:100px;font-weight:600;margin-bottom:20px;}
+  .api-badge.ok{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:var(--green);}
+  .api-badge.warn{background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);color:#f59e0b;}
+  .api-badge.err{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:var(--red);}
+  .api-dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+
+  /* ── APP GRID ── */
+  .app-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;}
+  .app-tile{aspect-ratio:1;border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;cursor:pointer;transition:var(--t);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.07);}
+  .app-tile:hover{transform:scale(1.05);box-shadow:0 20px 56px rgba(0,0,0,.55);}
+  .app-tile .ai{font-size:42px;}
+  .app-tile .an{font-size:13px;font-weight:500;letter-spacing:.05em;}
+  .app-tile .ad{font-size:10px;color:var(--muted);text-align:center;padding:0 8px;}
+  .app-tile.youtube{background:linear-gradient(135deg,#190404,#2e0707);}
+  .app-tile.netflix{background:linear-gradient(135deg,#1a0000,#360000);}
+  .app-tile.prime{background:linear-gradient(135deg,#050f19,#091d35);}
+  .app-tile.disney{background:linear-gradient(135deg,#030a16,#071426);}
+  .app-tile.hbo{background:linear-gradient(135deg,#08040e,#12071c);}
+  .app-tile.spotify{background:linear-gradient(135deg,#031507,#06270d);}
+  .app-tile.apple{background:linear-gradient(135deg,#0e0e0e,#1c1c1c);}
+  .app-tile.cast{background:linear-gradient(135deg,#08081a,#101028);}
+  .app-tile.bt{background:linear-gradient(135deg,#040c18,#081830);}
+  .app-tile.hdmi{background:linear-gradient(135deg,#0a0a08,#181816);}
+  .launch-pill{position:absolute;bottom:14px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(255,255,255,0.92);color:#050508;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:6px 16px;border-radius:100px;opacity:0;transition:var(--t);white-space:nowrap;}
+  .app-tile:hover .launch-pill{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* Method tag on app tile */
+  .method-tag{position:absolute;top:10px;right:10px;font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:4px;opacity:0.7;}
+  .method-tag.pcs{background:rgba(34,197,94,0.2);color:var(--green);}
+  .method-tag.wos{background:rgba(59,130,246,0.2);color:var(--blue);}
+  .method-tag.uri{background:rgba(245,158,11,0.2);color:#f59e0b;}
+
+  /* ── TV CHANNELS ── */
+  .ch-toolbar{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;}
+  .ch-filter{background:var(--surface);border:1px solid rgba(255,255,255,0.08);border-radius:100px;padding:8px 18px;font-size:11px;font-weight:500;cursor:pointer;transition:var(--t);color:var(--muted);font-family:var(--font-ui);}
+  .ch-filter:hover,.ch-filter.active{background:var(--gold-dim);border-color:var(--gold);color:var(--white);}
+  .ch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .ch-card{background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:18px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:var(--t);}
+  .ch-card:hover{background:var(--surface2);border-color:rgba(201,168,76,0.35);transform:translateX(4px);}
+  .ch-num{font-family:var(--font-display);font-size:26px;color:var(--gold);font-weight:300;min-width:44px;}
+  .ch-info .cn{font-size:13px;font-weight:500;}
+  .ch-info .ct{font-size:10px;color:var(--muted);margin-top:1px;}
+  .ch-live{display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0;}
+  .ldot{width:5px;height:5px;background:var(--red);border-radius:50%;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .ltxt{font-size:9px;color:var(--red);font-weight:700;letter-spacing:.08em;}
+
+  /* ── CASTING ── */
+  .wifi-bar{background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.22);border-radius:var(--radius-sm);padding:16px 24px;margin-bottom:28px;display:flex;align-items:center;gap:16px;}
+  .wifi-icon{font-size:26px;}
+  .wifi-info .wl{font-size:10px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;}
+  .wifi-info .wv{font-size:14px;font-weight:500;margin-top:2px;}
+  .cast-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .cast-block{background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);padding:28px;transition:var(--t);}
+  .cast-block:hover{border-color:rgba(255,255,255,0.14);}
+  .cast-block .cbi{font-size:48px;margin-bottom:16px;display:block;}
+  .cast-block h3{font-family:var(--font-display);font-size:24px;font-weight:300;margin-bottom:8px;}
+  .cast-block p{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:18px;}
+  .cast-launch-btn{display:inline-flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid rgba(255,255,255,0.12);border-radius:100px;padding:10px 20px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:var(--t);font-family:var(--font-ui);color:var(--white);}
+  .cast-launch-btn:hover{border-color:var(--gold);color:var(--gold);}
+  .cast-steps{margin-top:20px;}
+  .step{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;}
+  .sn{width:22px;height:22px;background:var(--gold);border-radius:50%;color:#06070b;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .st{font-size:12px;color:var(--muted);line-height:1.5;}
+
+  /* ── SECTION LABEL ── */
+  .sl{font-size:10px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;margin:32px 0 18px;display:flex;align-items:center;gap:12px;}
+  .sl::after{content:'';flex:1;height:1px;background:rgba(201,168,76,0.18);}
+
+  /* ── TOAST ── */
+  #toast{position:fixed;top:48px;right:36px;z-index:999;min-width:280px;
+    background:rgba(15,16,24,0.96);border:1px solid rgba(255,255,255,0.12);
+    backdrop-filter:blur(20px);border-radius:var(--radius-sm);
+    padding:14px 20px;font-size:12px;
+    transform:translateX(120%);transition:transform .4s cubic-bezier(.4,0,.2,1);
+    display:flex;align-items:center;gap:12px;box-shadow:0 12px 40px rgba(0,0,0,.6);}
+  #toast.show{transform:translateX(0);}
+  #toast.toast-ok{border-color:rgba(34,197,94,0.4);}
+  #toast.toast-warn{border-color:rgba(245,158,11,0.4);}
+  #toast.toast-err{border-color:rgba(239,68,68,0.4);}
+  .t-icon{font-size:18px;flex-shrink:0;}
+
+  /* ── MODAL ── */
+  #modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;}
+  #modal-overlay.open{display:flex;}
+  #modal{background:var(--bg2);border:1px solid rgba(255,255,255,0.1);border-radius:var(--radius);padding:44px 48px;max-width:540px;width:90%;animation:pIn .3s ease;}
+  #modal h2{font-family:var(--font-display);font-size:32px;font-weight:300;margin-bottom:12px;}
+  #modal p{font-size:13px;color:var(--muted);line-height:1.8;}
+  .modal-close{margin-top:26px;background:var(--gold);color:#06070b;border:none;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:11px 26px;border-radius:100px;cursor:pointer;font-family:var(--font-ui);}
+
+  /* ── TECH INFO BOX ── */
+  .tech-box{background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:var(--radius-sm);padding:18px 22px;margin-bottom:24px;}
+  .tech-box .tb-title{font-size:10px;letter-spacing:.2em;color:var(--blue);text-transform:uppercase;margin-bottom:10px;font-weight:600;}
+  .tech-box .tb-row{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);}
+  .tech-box .tb-row:last-child{border:none;}
+  .tech-box .tb-key{color:var(--muted);}
+  .tech-box .tb-val{color:var(--white);font-weight:500;font-family:monospace;font-size:11px;}
+
+  /* Hidden channels by category */
+  .ch-card[data-cat]{transition:var(--t);}
+  .ch-card.hidden{display:none;}
+</style>
 </head>
 <body>
 
-    <div class="bg-overlay"></div>
+<!-- PCS STATUS BAR -->
+<div id="pcs-status">
+  <div class="pcs-dot" id="dot-pcs"></div>
+  <span class="pcs-label">ProcentricJS</span>
+  <span class="pcs-val" id="lbl-pcs">Detecting…</span>
+  <span class="pcs-sep">|</span>
+  <div class="pcs-dot" id="dot-wos"></div>
+  <span class="pcs-label">webOS API</span>
+  <span class="pcs-val" id="lbl-wos">Detecting…</span>
+  <span class="pcs-sep">|</span>
+  <span class="pcs-label">Fallback</span>
+  <span class="pcs-val" style="color:#f59e0b">URI Scheme</span>
+  <div class="spacer"></div>
+  <span class="pcs-label">Room&nbsp;</span><span class="pcs-val" id="lbl-room">2407</span>
+  <span class="pcs-sep">|</span>
+  <span class="clock-disp" id="clock">--:-- --</span>
+</div>
 
-    <div class="header">
-        <h1>Culinary Journey</h1>
-        <p>Gunakan tombol (Atas/Bawah/Kiri/Kanan) di remote.</p>
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="hotel-name">✦ The Grand Meridian</div>
+  <div class="guest-info">
+    <div class="weather-tag"><span>🌤</span> 27°C · Dubai</div>
+    <div class="guest-tag">Welcome, <strong>Esteemed Guest</strong> · Check-out Sun 30 Mar</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home-screen">
+  <div id="hero-bg"><div id="orb1"></div><div id="orb2"></div></div>
+  <div class="hero-content">
+    <div>
+      <div class="welcome-tag">Your personal concierge</div>
+      <div class="hero-title">Good Evening,<br><em>Valued Guest</em></div>
+      <div class="hero-sub">Deluxe Ocean Suite · Room 2407 · Floor 24</div>
+    </div>
+    <div class="promo-card">
+      <div class="pb">🌟 Tonight's Highlight</div>
+      <h3>Sunset Rooftop Dinner</h3>
+      <p>5-course curated menu with Marina panorama. Tonight from 7 PM. Limited seats.</p>
+      <div class="promo-cta" onclick="openModal('Sunset Rooftop Dinner','Reserve your table by calling extension 201 or visiting concierge at Level 1. Smart casual dress code. Tonight 7 PM – 11:30 PM.')">Reserve Now →</div>
+    </div>
+  </div>
+  <div id="nav-grid">
+    <div class="nav-card" style="--nc:#ff2020" onclick="openPanel('entertainment')"><div class="nav-icon">🎬</div><div class="nav-label">Entertainment</div></div>
+    <div class="nav-card" style="--nc:#3b82f6" onclick="openPanel('tv')"><div class="nav-icon">📺</div><div class="nav-label">TV Channels</div></div>
+    <div class="nav-card" style="--nc:#8b5cf6" onclick="openPanel('cast')"><div class="nav-icon">📡</div><div class="nav-label">Cast & Mirror</div></div>
+    <div class="nav-card" style="--nc:var(--gold)" onclick="openPanel('hotel')"><div class="nav-icon">🏨</div><div class="nav-label">Hotel Info</div></div>
+    <div class="nav-card" style="--nc:#22c55e" onclick="openPanel('dining')"><div class="nav-icon">🍽️</div><div class="nav-label">Dining</div></div>
+    <div class="nav-card" style="--nc:#06b6d4" onclick="openPanel('facilities')"><div class="nav-icon">🏊</div><div class="nav-label">Facilities</div></div>
+    <div class="nav-card" style="--nc:var(--gold)" onclick="openPanel('promos')"><div class="nav-icon">🎁</div><div class="nav-label">Promotions</div></div>
+    <div class="nav-card" style="--nc:#f59e0b" onclick="showToast('🛎️ Room service request sent. Est. delivery: 30 min.','ok')"><div class="nav-icon">🛎️</div><div class="nav-label">Room Service</div></div>
+    <div class="nav-card" style="--nc:#10b981" onclick="showToast('🚗 Concierge notified. Taxi in ~10 min.','ok')"><div class="nav-icon">🚗</div><div class="nav-label">Concierge</div></div>
+    <div class="nav-card" style="--nc:#64748b" onclick="showToast('⏰ Wake-up call set for 7:00 AM.','ok')"><div class="nav-icon">⏰</div><div class="nav-label">Wake-up Call</div></div>
+  </div>
+</div>
+
+<!-- ROOM STRIP -->
+<div id="room-strip">
+  <div class="rc" onclick="showToast('💡 Lighting set to Relax mode.','ok')"><span>💡</span> Lights</div>
+  <div class="rc" onclick="showToast('❄️ Climate set to 22°C.','ok')"><span>❄️</span> Climate</div>
+  <div class="rc" onclick="showToast('🛏️ Housekeeping notified.','ok')"><span>🛏️</span> Housekeeping</div>
+  <div class="rc" onclick="showToast('🔕 Do Not Disturb activated.','ok')"><span>🔕</span> DND</div>
+  <div class="rc" onclick="showToast('🧖 Spa booking request sent.','ok')"><span>🧖</span> Book Spa</div>
+  <div class="spacer"></div>
+  <div class="room-badge">ROOM 2407 · FLOOR 24</div>
+  <div class="rc emergency" onclick="showToast('🚨 Emergency services alerted!','err')"><span>🚨</span> Emergency</div>
+</div>
+
+<!-- ═══════════════════════════════
+     ENTERTAINMENT PANEL
+═══════════════════════════════ -->
+<div class="panel" id="panel-entertainment">
+  <div class="ph">
+    <div class="ph-left">
+      <span class="ph-icon">🎬</span>
+      <div><div class="ph-title">Entertainment</div><div class="ph-sub">Native apps launch via Procentric API · webOS Service · URI fallback</div></div>
+    </div>
+    <button class="back-btn" onclick="closePanel('entertainment')">← Back</button>
+  </div>
+  <div class="pb">
+    <div id="ent-api-badge" class="api-badge warn"><div class="api-dot"></div><span id="ent-api-text">Checking API…</span></div>
+
+    <div class="tech-box">
+      <div class="tb-title">⚙ Launch Method Active</div>
+      <div class="tb-row"><span class="tb-key">Primary</span><span class="tb-val" id="tb-primary">Detecting…</span></div>
+      <div class="tb-row"><span class="tb-key">Fallback 1</span><span class="tb-val">webOS service.request (applicationManager)</span></div>
+      <div class="tb-row"><span class="tb-key">Fallback 2</span><span class="tb-val">sssp:// URI scheme</span></div>
+      <div class="tb-row"><span class="tb-key">App IDs source</span><span class="tb-val">CONFIG.APP_IDS (edit in script)</span></div>
     </div>
 
-    <div id="btn-back">
-        &#8592; Kembali ke Portal
+    <div class="app-grid">
+      <!-- Each tile: data-appid = CONFIG key; data-ch = for TV tuning -->
+      <div class="app-tile youtube" data-appid="YOUTUBE" onclick="launchApp('YOUTUBE','YouTube')">
+        <div class="method-tag pcs" id="mtag-YOUTUBE">PCS</div>
+        <div class="ai">▶️</div><div class="an">YouTube</div><div class="ad">Videos & music</div>
+        <div class="launch-pill">Launch App</div>
+      </div>
+      <div class="app-tile netflix" data-appid="NETFLIX" onclick="launchApp('NETFLIX','Netflix')">
+        <div class="method-tag pcs" id="mtag-NETFLIX">PCS</div>
+        <div class="ai">🎭</div><div class="an">Netflix</div><div class="ad">Movies & Series</div>
+        <div class="launch-pill">Launch App</div>
+      </div>
+      <div class="app-tile prime" data-appid="PRIME" onclick="launchApp('PRIME','Prime Video')">
+        <div class="method-tag pcs" id="mtag-PRIME">PCS</div>
+        <div class="ai">🎞️</div><div class="an">Prime Video</div><div class="ad">Amazon Originals</div>
+        <div class="launch-pill">Launch App</div>
+      </div>
+      <div class="app-tile disney" data-appid="DISNEY" onclick="launchApp('DISNEY','Disney+')">
+        <div class="method-tag pcs" id="mtag-DISNEY">PCS</div>
+        <div class="ai">🏰</div><div class="an">Disney+</div><div class="ad">Marvel · Star Wars</div>
+        <div class="launch-pill">Launch App</div>
+      </div>
+      <div class="app-tile hbo" data-appid="HBO" onclick="launchApp('HBO','HBO Max')">
+        <div class="method-tag pcs" id="mtag-HBO">PCS</div>
+        <div class="ai">🎩</div><div class="an">HBO Max</div><div class="ad">Premium originals</div>
+        <div class="launch-pill">Launch App</div>
+      </div>
+      <div class="app-tile spotify" data-appid="SPOTIFY" onclick="launchApp('SPOTIFY','Spotify')">
+        <div class="method-tag pcs" id="mtag-SPOTIFY">PCS</div>
+        <div class="ai">🎵</div><div class="an">Spotify</div><div class="ad">Music & podcasts</div>
+        <div class="launch-pill">Launch App</div>
+      </div>
+      <div class="app-tile apple" data-appid="APPLETV" onclick="launchApp('APPLETV','Apple TV+')">
+        <div class="method-tag wos" id="mtag-APPLETV">wOS</div>
+        <div class="ai">🍎</div><div class="an">Apple TV+</div><div class="ad">Award-winning shows</div>
+        <div class="launch-pill">Launch App</div>
+      </div>
+      <div class="app-tile cast" data-appid="SCREENSHARE" onclick="launchApp('SCREENSHARE','Screen Share')">
+        <div class="method-tag wos" id="mtag-SCREENSHARE">wOS</div>
+        <div class="ai">📡</div><div class="an">Screen Share</div><div class="ad">Miracast · AirPlay</div>
+        <div class="launch-pill">Open</div>
+      </div>
+      <div class="app-tile bt" data-appid="BLUETOOTH" onclick="launchApp('BLUETOOTH','Bluetooth')">
+        <div class="method-tag wos" id="mtag-BLUETOOTH">wOS</div>
+        <div class="ai">🔵</div><div class="an">Bluetooth</div><div class="ad">Audio pairing</div>
+        <div class="launch-pill">Open</div>
+      </div>
+      <div class="app-tile hdmi" data-appid="HDMI1" onclick="launchApp('HDMI1','HDMI 1')">
+        <div class="method-tag wos" id="mtag-HDMI1">wOS</div>
+        <div class="ai">🔌</div><div class="an">HDMI 1</div><div class="ad">External device</div>
+        <div class="launch-pill">Switch</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     TV CHANNELS PANEL
+═══════════════════════════════ -->
+<div class="panel" id="panel-tv">
+  <div class="ph">
+    <div class="ph-left">
+      <span class="ph-icon">📺</span>
+      <div><div class="ph-title">TV Channels</div><div class="ph-sub">Tap a channel — tunes directly via Procentric channel API</div></div>
+    </div>
+    <button class="back-btn" onclick="closePanel('tv')">← Back</button>
+  </div>
+  <div class="pb">
+    <div class="ch-toolbar">
+      <button class="ch-filter active" onclick="filterCh('all',this)">All Channels</button>
+      <button class="ch-filter" onclick="filterCh('news',this)">📰 News</button>
+      <button class="ch-filter" onclick="filterCh('sports',this)">⚽ Sports</button>
+      <button class="ch-filter" onclick="filterCh('entertainment',this)">🎭 Entertainment</button>
+      <button class="ch-filter" onclick="filterCh('kids',this)">🧸 Kids</button>
+      <button class="ch-filter" onclick="filterCh('documentary',this)">🌍 Documentary</button>
     </div>
 
-    <div class="slider-container" id="slider">
-        <div class="card active" data-title="The Grand Restaurant" data-desc="Nikmati sajian prasmanan internasional dan menu ala carte premium dengan pemandangan taman tropis. Buka mulai 06:00 - 23:00 WITA." data-img="https://source.unsplash.com/800x600/?restaurant,fine-dining">
-            <img src="https://source.unsplash.com/800x600/?restaurant,fine-dining" alt="Dining 1">
-            <div class="card-info">
-                <h2>The Grand Restaurant</h2>
-                <p>International Fine Dining & Local Delicacies.</p>
-            </div>
-        </div>
-        
-        <div class="card" data-title="Lounge & Bar" data-desc="Bersantai dengan pilihan koktail eksklusif, wine premium, dan tapas ringan sambil menikmati musik live di sore hari." data-img="https://source.unsplash.com/800x600/?lounge,cocktail">
-            <img src="https://source.unsplash.com/800x600/?lounge,cocktail" alt="Dining 2">
-            <div class="card-info">
-                <h2>Lounge & Bar</h2>
-                <p>Premium Cocktails, Wine, and Tapas.</p>
-            </div>
-        </div>
-
-        <div class="card" data-title="In-Villa Dining" data-desc="Nikmati privasi maksimal dengan layanan antar makanan langsung ke kamar atau villa Anda, tersedia 24 Jam." data-img="https://source.unsplash.com/800x600/?breakfast,bed">
-            <img src="https://source.unsplash.com/800x600/?breakfast,bed" alt="Dining 3">
-            <div class="card-info">
-                <h2>In-Villa Dining</h2>
-                <p>24/7 Private Room Service.</p>
-            </div>
-        </div>
+    <div class="ch-grid" id="ch-grid">
+      <!-- NEWS -->
+      <div class="ch-card" data-cat="news" onclick="tuneChannel(1,'BBC World News')"><div class="ch-num">001</div><div class="ch-info"><div class="cn">BBC World News</div><div class="ct">News · International · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="news" onclick="tuneChannel(2,'CNN International')"><div class="ch-num">002</div><div class="ch-info"><div class="cn">CNN International</div><div class="ct">News · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="news" onclick="tuneChannel(3,'Al Jazeera English')"><div class="ch-num">003</div><div class="ch-info"><div class="cn">Al Jazeera English</div><div class="ct">News · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="news" onclick="tuneChannel(4,'France 24')"><div class="ch-num">004</div><div class="ch-info"><div class="cn">France 24</div><div class="ct">News · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="news" onclick="tuneChannel(5,'Sky News')"><div class="ch-num">005</div><div class="ch-info"><div class="cn">Sky News</div><div class="ct">News · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="news" onclick="tuneChannel(6,'CNBC')"><div class="ch-num">006</div><div class="ch-info"><div class="cn">CNBC</div><div class="ct">Business · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <!-- SPORTS -->
+      <div class="ch-card" data-cat="sports" onclick="tuneChannel(101,'beIN Sports 1')"><div class="ch-num">101</div><div class="ch-info"><div class="cn">beIN Sports 1</div><div class="ct">Sports · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="sports" onclick="tuneChannel(102,'beIN Sports 2')"><div class="ch-num">102</div><div class="ch-info"><div class="cn">beIN Sports 2</div><div class="ct">Sports · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="sports" onclick="tuneChannel(103,'ESPN')"><div class="ch-num">103</div><div class="ch-info"><div class="cn">ESPN</div><div class="ct">Sports · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="sports" onclick="tuneChannel(104,'Sky Sports Main')"><div class="ch-num">104</div><div class="ch-info"><div class="cn">Sky Sports Main</div><div class="ct">Sports · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="sports" onclick="tuneChannel(105,'Eurosport')"><div class="ch-num">105</div><div class="ch-info"><div class="cn">Eurosport</div><div class="ct">Sports · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <!-- ENTERTAINMENT -->
+      <div class="ch-card" data-cat="entertainment" onclick="tuneChannel(201,'FOX')"><div class="ch-num">201</div><div class="ch-info"><div class="cn">FOX</div><div class="ct">Entertainment · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="entertainment" onclick="tuneChannel(202,'MBC Drama')"><div class="ch-num">202</div><div class="ch-info"><div class="cn">MBC Drama</div><div class="ct">Entertainment · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="entertainment" onclick="tuneChannel(203,'Star Movies')"><div class="ch-num">203</div><div class="ch-info"><div class="cn">Star Movies</div><div class="ct">Movies · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="entertainment" onclick="tuneChannel(204,'OSN Series')"><div class="ch-num">204</div><div class="ch-info"><div class="cn">OSN Series</div><div class="ct">Series · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <!-- KIDS -->
+      <div class="ch-card" data-cat="kids" onclick="tuneChannel(301,'Cartoon Network')"><div class="ch-num">301</div><div class="ch-info"><div class="cn">Cartoon Network</div><div class="ct">Kids · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="kids" onclick="tuneChannel(302,'Disney Channel')"><div class="ch-num">302</div><div class="ch-info"><div class="cn">Disney Channel</div><div class="ct">Kids · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="kids" onclick="tuneChannel(303,'Nickelodeon')"><div class="ch-num">303</div><div class="ch-info"><div class="cn">Nickelodeon</div><div class="ct">Kids · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <!-- DOCUMENTARY -->
+      <div class="ch-card" data-cat="documentary" onclick="tuneChannel(401,'National Geographic')"><div class="ch-num">401</div><div class="ch-info"><div class="cn">National Geographic</div><div class="ct">Documentary · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="documentary" onclick="tuneChannel(402,'Discovery Channel')"><div class="ch-num">402</div><div class="ch-info"><div class="cn">Discovery Channel</div><div class="ct">Documentary · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
+      <div class="ch-card" data-cat="documentary" onclick="tuneChannel(403,'History Channel')"><div class="ch-num">403</div><div class="ch-info"><div class="cn">History Channel</div><div class="ct">Documentary · HD</div></div><div class="ch-live"><div class="ldot"></div><div class="ltxt">LIVE</div></div></div>
     </div>
+  </div>
+</div>
 
-    <div id="detail-modal">
-        <div class="modal-body">
-            <img id="modal-img" src="" alt="Detail Image">
-            <div class="modal-text">
-                <h2 id="modal-title">Title</h2>
-                <p id="modal-desc">Description goes here.</p>
-                <div class="modal-hint">Tekan OK atau BACK untuk menutup</div>
-            </div>
-        </div>
+<!-- ═══════════════════════════════
+     CAST & MIRROR PANEL
+═══════════════════════════════ -->
+<div class="panel" id="panel-cast">
+  <div class="ph">
+    <div class="ph-left">
+      <span class="ph-icon">📡</span>
+      <div><div class="ph-title">Cast & Mirror</div><div class="ph-sub">Wirelessly share content from your device to this screen</div></div>
     </div>
+    <button class="back-btn" onclick="closePanel('cast')">← Back</button>
+  </div>
+  <div class="pb">
+    <div class="wifi-bar">
+      <div class="wifi-icon">📶</div>
+      <div class="wifi-info">
+        <div class="wl">Hotel WiFi — Connect your device first</div>
+        <div class="wv">GrandMeridian_Guest_5G &nbsp;·&nbsp; Password: <strong>Welcome2407</strong></div>
+      </div>
+    </div>
+    <div class="cast-grid">
+      <div class="cast-block">
+        <span class="cbi">📡</span>
+        <h3>Screen Share / Miracast</h3>
+        <p>Mirror your device screen wirelessly. Works with Android, Windows, and selected iOS devices via AirPlay.</p>
+        <button class="cast-launch-btn" onclick="launchApp('SCREENSHARE','Screen Share')">🚀 Open Screen Share App</button>
+        <div class="cast-steps">
+          <div class="step"><div class="sn">1</div><div class="st"><strong>Android:</strong> Quick Settings → Smart View / Cast → Room 2407</div></div>
+          <div class="step"><div class="sn">2</div><div class="st"><strong>Windows:</strong> Win + K → Connect → Room 2407 TV</div></div>
+          <div class="step"><div class="sn">3</div><div class="st"><strong>iOS / Mac:</strong> Control Center → Screen Mirror → Room 2407</div></div>
+        </div>
+      </div>
+      <div class="cast-block">
+        <span class="cbi">🔵</span>
+        <h3>Bluetooth Audio</h3>
+        <p>Pair your phone or laptop for audio output through the room's built-in speaker system.</p>
+        <button class="cast-launch-btn" onclick="launchApp('BLUETOOTH','Bluetooth Settings')">🔵 Open Bluetooth Settings</button>
+        <div class="cast-steps">
+          <div class="step"><div class="sn">1</div><div class="st">Enable Bluetooth on your device</div></div>
+          <div class="step"><div class="sn">2</div><div class="st">Select <strong>Room-2407-Audio</strong> from available devices</div></div>
+          <div class="step"><div class="sn">3</div><div class="st">Confirm pairing — no PIN required</div></div>
+        </div>
+      </div>
+      <div class="cast-block">
+        <span class="cbi">🔌</span>
+        <h3>HDMI Direct</h3>
+        <p>Connect your laptop via HDMI cable for guaranteed wired connection. Cable available from housekeeping.</p>
+        <button class="cast-launch-btn" onclick="launchApp('HDMI1','HDMI 1 Input')">🔌 Switch to HDMI 1</button>
+        <div class="cast-steps">
+          <div class="step"><div class="sn">1</div><div class="st">Request HDMI cable from housekeeping (Ext. 100)</div></div>
+          <div class="step"><div class="sn">2</div><div class="st">Connect to HDMI port on right side of TV</div></div>
+          <div class="step"><div class="sn">3</div><div class="st">Press button above to switch input automatically</div></div>
+        </div>
+      </div>
+      <div class="cast-block">
+        <span class="cbi">▶️</span>
+        <h3>Chromecast Built-in</h3>
+        <p>Cast directly from YouTube, Netflix, Spotify and 1000+ Cast-enabled apps on your phone.</p>
+        <button class="cast-launch-btn" onclick="showToast('📺 Chromecast ready. Open a Cast-enabled app on your phone.','ok')">✓ Chromecast Ready</button>
+        <div class="cast-steps">
+          <div class="step"><div class="sn">1</div><div class="st">Connect phone to <strong>GrandMeridian_Guest_5G</strong></div></div>
+          <div class="step"><div class="sn">2</div><div class="st">Open YouTube, Netflix, or any Cast app</div></div>
+          <div class="step"><div class="sn">3</div><div class="st">Tap Cast icon → select <strong>Room 2407 – TV</strong></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <script>
-        window.onload = function() {
-            window.focus(); 
-        };
+<!-- HOTEL INFO, DINING, FACILITIES, PROMOS — kept from v1, unchanged visual -->
+<div class="panel" id="panel-hotel">
+  <div class="ph"><div class="ph-left"><span class="ph-icon">🏨</span><div><div class="ph-title">Hotel Information</div><div class="ph-sub">Everything about The Grand Meridian</div></div></div><button class="back-btn" onclick="closePanel('hotel')">← Back</button></div>
+  <div class="pb">
+    <div class="sl">Essential Contacts</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">📞</div><h4 style="font-size:14px;margin-bottom:6px;">Reception 24/7</h4><p style="font-size:12px;color:var(--muted)">Dial <strong style="color:var(--white)">0</strong> from room phone. Any request, any time.</p><div style="margin-top:12px;font-size:10px;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:100px;padding:3px 12px;display:inline-block;">Ext. 0</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">🛎️</div><h4 style="font-size:14px;margin-bottom:6px;">Room Service 24/7</h4><p style="font-size:12px;color:var(--muted)">Full restaurant menu delivered in-room. 35 min guarantee.</p><div style="margin-top:12px;font-size:10px;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:100px;padding:3px 12px;display:inline-block;">Ext. 201</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">🏥</div><h4 style="font-size:14px;margin-bottom:6px;">Medical Assistance</h4><p style="font-size:12px;color:var(--muted)">On-call nurse 24/7. In-room doctor available with 1hr notice.</p><div style="margin-top:12px;font-size:10px;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:100px;padding:3px 12px;display:inline-block;">Ext. 911</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">🚗</div><h4 style="font-size:14px;margin-bottom:6px;">Valet & Transport</h4><p style="font-size:12px;color:var(--muted)">Complimentary valet. Limo, taxi, airport transfers available.</p><div style="margin-top:12px;font-size:10px;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:100px;padding:3px 12px;display:inline-block;">Ext. 302</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">🛁</div><h4 style="font-size:14px;margin-bottom:6px;">Housekeeping</h4><p style="font-size:12px;color:var(--muted)">Daily service 7–10 AM. Laundry & dry cleaning with 4hr express.</p><div style="margin-top:12px;font-size:10px;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:100px;padding:3px 12px;display:inline-block;">Ext. 100</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:24px;">
+        <div style="font-size:28px;margin-bottom:12px;">💶</div><h4 style="font-size:14px;margin-bottom:6px;">Check-in / Out</h4><p style="font-size:12px;color:var(--muted)">Check-in from 3 PM · Check-out by 12 PM. Late check-out on request.</p><div style="margin-top:12px;font-size:10px;letter-spacing:.12em;color:var(--gold);border:1px solid rgba(201,168,76,.3);border-radius:100px;padding:3px 12px;display:inline-block;">Reception</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        const cards = document.querySelectorAll('.card');
-        const btnBack = document.getElementById('btn-back');
-        const modal = document.getElementById('detail-modal');
-        
-        let currentCardIndex = 0;
-        let isModalOpen = false;
-        // Status fokus area: 'cards' (kartu menu) atau 'backButton' (tombol kembali)
-        let focusArea = 'cards'; 
+<div class="panel" id="panel-dining">
+  <div class="ph"><div class="ph-left"><span class="ph-icon">🍽️</span><div><div class="ph-title">Dining</div><div class="ph-sub">World-class culinary experiences across five venues</div></div></div><button class="back-btn" onclick="closePanel('dining')">← Back</button></div>
+  <div class="pb">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;">
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('Meridian Sky — Rooftop Fine Dining','52nd floor. Contemporary Mediterranean menu by Executive Chef. Dress: Smart Elegant. Reservations: Ext. 201. Tonight 7PM–11:30PM.')">
+        <div style="height:140px;background:linear-gradient(135deg,#0a0c10,#141826);display:flex;align-items:center;justify-content:center;font-size:58px;">🌃</div>
+        <div style="padding:20px;"><div style="font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Fine Dining · 52nd Floor</div><h3 style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:6px;">Meridian Sky</h3><p style="font-size:11px;color:var(--muted);line-height:1.7;">Panoramic Marina views. Seasonal tasting menus.</p></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;"><span style="color:var(--muted)">7:00 PM – 11:30 PM</span><span style="color:var(--gold);cursor:pointer;">Reserve →</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('The Brasserie — All-Day Dining','International buffet with live cooking stations. Breakfast 6:30–10:30 AM, Lunch 12–3 PM, Dinner 6:30–11 PM. Children under 6 dine free.')">
+        <div style="height:140px;background:linear-gradient(135deg,#0a0c08,#141e10);display:flex;align-items:center;justify-content:center;font-size:58px;">🥐</div>
+        <div style="padding:20px;"><div style="font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">All-Day · Level 1</div><h3 style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:6px;">The Brasserie</h3><p style="font-size:11px;color:var(--muted);line-height:1.7;">International buffet · Live cooking stations.</p></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;"><span style="color:var(--muted)">6:30 AM – 11:00 PM</span><span style="color:var(--gold);">View Menu →</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('Sakura — Japanese Restaurant','Authentic Japanese by Head Chef Kenji Takahashi. Omakase menus, premium sushi bar, private tatami rooms. Ext. 201.')">
+        <div style="height:140px;background:linear-gradient(135deg,#0e0509,#1a0810);display:flex;align-items:center;justify-content:center;font-size:58px;">🍣</div>
+        <div style="padding:20px;"><div style="font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Japanese · Level 3</div><h3 style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:6px;">Sakura</h3><p style="font-size:11px;color:var(--muted);line-height:1.7;">Omakase · Sushi bar · Private tatami rooms.</p></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;"><span style="color:var(--muted)">12:00 PM – 10:30 PM</span><span style="color:var(--gold);">Reserve →</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('The Lobby Lounge','Afternoon tea 2–5 PM daily. Cocktail lounge from 5 PM with live piano Thu–Sat.')">
+        <div style="height:140px;background:linear-gradient(135deg,#080c10,#0c1620);display:flex;align-items:center;justify-content:center;font-size:58px;">🍵</div>
+        <div style="padding:20px;"><div style="font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Lounge · Lobby Level</div><h3 style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:6px;">Lobby Lounge</h3><p style="font-size:11px;color:var(--muted);line-height:1.7;">Afternoon tea · Cocktails · Live piano.</p></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;"><span style="color:var(--muted)">10:00 AM – 1:00 AM</span><span style="color:var(--gold);">Reserve →</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('Pool Bar & Grill','Casual poolside dining. Fresh seafood, grills, tropical cocktails. Sunbed service included. Level 8 pool deck.')">
+        <div style="height:140px;background:linear-gradient(135deg,#05090c,#081424);display:flex;align-items:center;justify-content:center;font-size:58px;">🏊</div>
+        <div style="padding:20px;"><div style="font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Casual · Pool Deck L8</div><h3 style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:6px;">Pool Bar & Grill</h3><p style="font-size:11px;color:var(--muted);line-height:1.7;">Seafood · Grills · Tropical cocktails.</p></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;"><span style="color:var(--muted)">10:00 AM – 8:00 PM</span><span style="color:var(--gold);">Walk-in Welcome</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="showToast('🛎️ Opening room service menu…','ok')">
+        <div style="height:140px;background:linear-gradient(135deg,#0c0a06,#1a180a);display:flex;align-items:center;justify-content:center;font-size:58px;">🛎️</div>
+        <div style="padding:20px;"><div style="font-size:10px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">In-Room · 24 Hours</div><h3 style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:6px;">Room Service</h3><p style="font-size:11px;color:var(--muted);line-height:1.7;">Full menu delivered to your suite in 35 min.</p></div>
+        <div style="display:flex;justify-content:space-between;padding:12px 20px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;"><span style="color:var(--muted)">Available 24 Hours</span><span style="color:var(--gold);">Order Now →</span></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-        function updateUI() {
-            // Hapus semua fokus terlebih dahulu
-            cards.forEach(card => card.classList.remove('active'));
-            btnBack.classList.remove('focused');
+<div class="panel" id="panel-facilities">
+  <div class="ph"><div class="ph-left"><span class="ph-icon">🏊</span><div><div class="ph-title">Facilities</div><div class="ph-sub">World-class amenities for your wellbeing</div></div></div><button class="back-btn" onclick="closePanel('facilities')">← Back</button></div>
+  <div class="pb">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('The Meridian Spa','3,200 sq ft on Level 6. 14 treatment rooms, hammam, sauna, steam room, ice fountain. Arabian and holistic therapies. Book: Ext. 600. Open 9AM–10PM.')"><div style="font-size:32px;margin-bottom:10px;">🧖</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Meridian Spa</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">14 rooms · Hammam · Sauna</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">Level 6 · 9AM–10PM</div></div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('Infinity Pool','Heated rooftop infinity pool Level 8. Panoramic Marina views. Heated to 28°C year-round. Sunbeds, towels, cabana service complimentary. Pool bar adjacent. Open 7AM–10PM.')"><div style="font-size:32px;margin-bottom:10px;">🏊</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Infinity Pool</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">Heated · Marina views</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">Level 8 · 7AM–10PM</div></div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('Fitness Centre','State-of-the-art Technogym equipment, free weights, functional training. Personal training available. Towel and water service. Key-card 24hr access.')"><div style="font-size:32px;margin-bottom:10px;">🏋️</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Fitness Centre</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">Technogym · 24hr access</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">Level 5 · 24 Hours</div></div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('Tennis Court','Professional hard court Level 7. Equipment rental. Lessons with resident coach available. Contact sports desk Ext. 700.')"><div style="font-size:32px;margin-bottom:10px;">🎾</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Tennis Court</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">Hard court · Coaching</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">Level 7 · 6AM–10PM</div></div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('Kids Club','Supervised activities for children 4–12. Arts, crafts, cooking, outdoor play. Complimentary for hotel guests. Level 3, 9AM–7PM.')"><div style="font-size:32px;margin-bottom:10px;">🧸</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Kids Club</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">Ages 4–12 · Supervised</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">Level 3 · 9AM–7PM</div></div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('Private Beach Club','Complimentary shuttle every hour from lobby. Private sun loungers, water sports, beach bar. 8 minutes from hotel.')"><div style="font-size:32px;margin-bottom:10px;">🏖️</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Beach Club</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">Private · Water sports</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">8 Min · 8AM–7PM</div></div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('Yoga Studio','Daily sunrise (6:30 AM) and sunset (6 PM) classes. Private instruction available. Mats and props provided.')"><div style="font-size:32px;margin-bottom:10px;">🧘</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Yoga Studio</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">Daily classes · Instruction</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">Level 6 · 6AM–8PM</div></div>
+      <div style="background:var(--surface);border:1px solid rgba(255,255,255,0.07);border-radius:var(--radius-sm);padding:22px 18px;text-align:center;cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''" onclick="openModal('Business Centre','Printing, scanning, secretarial. High-speed fibre. 8 meeting rooms with video conferencing. Level 2.')"><div style="font-size:32px;margin-bottom:10px;">💼</div><h4 style="font-size:12px;font-weight:500;margin-bottom:5px;">Business Centre</h4><p style="font-size:10px;color:var(--muted);line-height:1.6;">Meetings · Printing</p><div style="margin-top:10px;font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;">Level 2 · 7AM–9PM</div></div>
+    </div>
+  </div>
+</div>
 
-            // Berikan fokus sesuai area yang aktif
-            if (focusArea === 'cards') {
-                cards[currentCardIndex].classList.add('active');
-            } else if (focusArea === 'backButton') {
-                btnBack.classList.add('focused');
-                // Tetap biarkan kartu terakhir sedikit menyala agar UI tidak terlihat mati
-                cards[currentCardIndex].classList.add('active');
-            }
-        }
+<div class="panel" id="panel-promos">
+  <div class="ph"><div class="ph-left"><span class="ph-icon">🎁</span><div><div class="ph-title">Special Offers</div><div class="ph-sub">Exclusive packages for our valued guests</div></div></div><button class="back-btn" onclick="closePanel('promos')">← Back</button></div>
+  <div class="pb">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div style="border-radius:var(--radius);padding:32px;border:1px solid rgba(201,168,76,0.2);background:linear-gradient(135deg,#0e0c06,#1a1508);cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('Romance Package','Petal-strewn room, chilled Champagne, 60-min couple massage, breakfast in bed, late check-out 3 PM. Any night. Book: Ext. 0. From AED 890/night.')"><div style="font-size:48px;margin-bottom:14px;">💑</div><div style="font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Couples Package</div><h3 style="font-family:var(--font-display);font-size:26px;font-weight:300;margin-bottom:8px;">Romance Getaway</h3><p style="font-size:12px;color:var(--muted);line-height:1.7;">Champagne, couple's massage, petal-strewn room, and late check-out.</p><div style="margin-top:16px;font-size:22px;font-weight:300;">From <span style="font-family:var(--font-display);font-size:34px;color:var(--gold);">AED 890</span> / night</div><div style="margin-top:16px;display:inline-block;background:var(--gold);color:#06070b;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:9px 22px;border-radius:100px;">Book Now</div></div>
+      <div style="border-radius:var(--radius);padding:32px;border:1px solid rgba(201,168,76,0.2);background:linear-gradient(135deg,#060d12,#081826);cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('Spa & Dine Experience','90-min bespoke spa treatment + 3-course rooftop dinner for two. Tue–Thu. Reserve: Ext. 600. From AED 650/person.')"><div style="font-size:48px;margin-bottom:14px;">🧖</div><div style="font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Wellness</div><h3 style="font-family:var(--font-display);font-size:26px;font-weight:300;margin-bottom:8px;">Spa & Dine Experience</h3><p style="font-size:12px;color:var(--muted);line-height:1.7;">90-min spa treatment followed by a 3-course rooftop dinner for two.</p><div style="margin-top:16px;font-size:22px;font-weight:300;">From <span style="font-family:var(--font-display);font-size:34px;color:var(--gold);">AED 650</span> / person</div><div style="margin-top:16px;display:inline-block;background:var(--gold);color:#06070b;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:9px 22px;border-radius:100px;">Reserve</div></div>
+      <div style="border-radius:var(--radius);padding:32px;border:1px solid rgba(201,168,76,0.2);background:linear-gradient(135deg,#090614,#14093a);cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('Family Fun Package','Suite upgrade, Kids Club access, pool cabana, complimentary family dinner at The Brasserie. From AED 1,200/night.')"><div style="font-size:48px;margin-bottom:14px;">👨‍👩‍👧‍👦</div><div style="font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Family</div><h3 style="font-family:var(--font-display);font-size:26px;font-weight:300;margin-bottom:8px;">Family Fun Package</h3><p style="font-size:12px;color:var(--muted);line-height:1.7;">Suite upgrade, Kids Club, pool cabana and complimentary family dinner.</p><div style="margin-top:16px;font-size:22px;font-weight:300;">From <span style="font-family:var(--font-display);font-size:34px;color:var(--gold);">AED 1,200</span> / night</div><div style="margin-top:16px;display:inline-block;background:var(--gold);color:#06070b;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:9px 22px;border-radius:100px;">Book Now</div></div>
+      <div style="border-radius:var(--radius);padding:32px;border:1px solid rgba(201,168,76,0.2);background:linear-gradient(135deg,#060c08,#091a0c);cursor:pointer;transition:var(--t);" onmouseenter="this.style.transform='translateY(-4px)'" onmouseleave="this.style.transform=''" onclick="openModal('Extended Stay — 20% Off','Stay 4+ nights: 20% off room rate, complimentary airport transfer, daily laundry for 2 items, welcome amenity. Contact Reception to apply.')"><div style="font-size:48px;margin-bottom:14px;">🏷️</div><div style="font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-bottom:10px;">Long Stay</div><h3 style="font-family:var(--font-display);font-size:26px;font-weight:300;margin-bottom:8px;">Extended Stay — 20% Off</h3><p style="font-size:12px;color:var(--muted);line-height:1.7;">4+ nights: 20% discount, free airport transfer, daily laundry included.</p><div style="margin-top:16px;font-size:22px;font-weight:300;"><span style="font-family:var(--font-display);font-size:34px;color:var(--gold);">20%</span> off your rate</div><div style="margin-top:16px;display:inline-block;background:var(--gold);color:#06070b;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:9px 22px;border-radius:100px;">Apply Offer</div></div>
+    </div>
+  </div>
+</div>
 
-        function showDetail() {
-            const activeCard = cards[currentCardIndex];
-            document.getElementById('modal-title').innerText = activeCard.getAttribute('data-title');
-            document.getElementById('modal-desc').innerText = activeCard.getAttribute('data-desc');
-            document.getElementById('modal-img').src = activeCard.getAttribute('data-img');
-            
-            modal.classList.add('show');
-            isModalOpen = true;
-        }
+<!-- TOAST -->
+<div id="toast"><span class="t-icon" id="t-icon">✓</span><span id="toast-msg"></span></div>
 
-        function hideDetail() {
-            modal.classList.remove('show');
-            isModalOpen = false;
-        }
+<!-- MODAL -->
+<div id="modal-overlay" onclick="closeModal()">
+  <div id="modal" onclick="event.stopPropagation()">
+    <h2 id="modal-title"></h2>
+    <p id="modal-body" style="margin-top:10px;"></p>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  </div>
+</div>
 
-        // EVENT LISTENER REMOTE KONTROL (SPATIAL NAVIGATION)
-        document.addEventListener('keydown', function(e) {
-            
-            // Jika Modal Detail sedang Terbuka
-            if (isModalOpen) {
-                // Tombol OK(13), Back(461), Escape(27), Backspace(8) akan menutup modal
-                if (e.keyCode === 13 || e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8) {
-                    hideDetail();
-                    e.preventDefault(); 
-                }
-                return; // Stop navigasi D-pad saat modal terbuka
-            }
+<script>
+// ═══════════════════════════════════════════════════════
+//  CONFIGURATION — EDIT THIS SECTION FOR YOUR PROPERTY
+// ═══════════════════════════════════════════════════════
+const CONFIG = {
 
-            // Jika Modal Detail Tertutup (Navigasi Halaman Utama)
-            switch(e.keyCode) {
-                case 39: // Tombol Kanan
-                    if (focusArea === 'cards' && currentCardIndex < cards.length - 1) {
-                        currentCardIndex++;
-                        updateUI();
-                    }
-                    break;
+  ROOM_NUMBER: '2407',
 
-                case 37: // Tombol Kiri
-                    if (focusArea === 'cards' && currentCardIndex > 0) {
-                        currentCardIndex--;
-                        updateUI();
-                    }
-                    break;
+  // ── WIFI ──
+  WIFI_SSID: 'GrandMeridian_Guest_5G',
+  WIFI_PASS: 'Welcome2407',
 
-                case 38: // Tombol Atas
-                    if (focusArea === 'cards') {
-                        focusArea = 'backButton'; // Pindah fokus ke tombol kembali
-                        updateUI();
-                    }
-                    break;
+  // ── APP IDs ──────────────────────────────────────────────────────────────
+  // Each entry has:
+  //   pcs:  App ID registered in your Procentric Server (PCS Admin → App Management)
+  //         Check the exact ID in PCS. Common IDs below are LG defaults.
+  //   webos: webOS built-in app ID (used if PCS API unavailable)
+  //   uri:   sssp:// URI fallback (last resort)
+  // ─────────────────────────────────────────────────────────────────────────
+  APP_IDS: {
+    YOUTUBE:     { pcs: 'youtube.leanback.v4',       webos: 'youtube.leanback.v4',       uri: 'sssp://v2/apps/launch?appId=youtube.leanback.v4' },
+    NETFLIX:     { pcs: 'netflix',                   webos: 'netflix',                   uri: 'sssp://v2/apps/launch?appId=netflix' },
+    PRIME:       { pcs: 'amazon',                    webos: 'amazon',                    uri: 'sssp://v2/apps/launch?appId=amazon' },
+    DISNEY:      { pcs: 'disney',                    webos: 'disney',                    uri: 'sssp://v2/apps/launch?appId=disney' },
+    HBO:         { pcs: 'hbo',                       webos: 'hbo',                       uri: 'sssp://v2/apps/launch?appId=hbo' },
+    SPOTIFY:     { pcs: 'spotify-beehive',           webos: 'spotify-beehive',           uri: 'sssp://v2/apps/launch?appId=spotify-beehive' },
+    APPLETV:     { pcs: 'com.apple.appletv',         webos: 'com.apple.appletv',         uri: 'sssp://v2/apps/launch?appId=com.apple.appletv' },
+    SCREENSHARE: { pcs: 'com.webos.app.miracast',    webos: 'com.webos.app.miracast',    uri: 'sssp://v2/apps/launch?appId=com.webos.app.miracast' },
+    BLUETOOTH:   { pcs: 'com.webos.app.bluetooth',   webos: 'com.webos.app.bluetooth',   uri: 'sssp://v2/apps/launch?appId=com.webos.app.bluetooth' },
+    HDMI1:       { pcs: 'com.webos.app.hdmi1',       webos: 'com.webos.app.hdmi1',       uri: 'sssp://v2/apps/launch?appId=com.webos.app.hdmi1' },
+  }
+};
 
-                case 40: // Tombol Bawah
-                    if (focusArea === 'backButton') {
-                        focusArea = 'cards'; // Kembali fokus ke kartu
-                        updateUI();
-                    }
-                    break;
+// ═══════════════════════════════════════════════════════
+//  API DETECTION — runs on load
+// ═══════════════════════════════════════════════════════
+let API_METHOD = 'uri'; // default fallback
 
-                case 13: // Tombol OK / Enter
-                    if (focusArea === 'backButton') {
-                        // Redirect langsung iframe ini memuat file index.html
-                        window.location.href = 'index.html'; 
-                    } else if (focusArea === 'cards') {
-                        showDetail();
-                    }
-                    break;
+function detectAPIs() {
+  const hasPCS  = (typeof window.ProcentralJS !== 'undefined' && typeof window.ProcentralJS.launchApp === 'function');
+  const hasWOS  = (typeof window.webOS !== 'undefined' && typeof window.webOS.service !== 'undefined');
 
-                // Tetap simpan fallback Back jika sewaktu-waktu terbaca oleh sistem
-                case 461: 
-                case 8: 
-                case 27: 
-                    window.location.href = 'index.html';
-                    e.preventDefault();
-                    break;
-            }
-        });
+  // PCS Status bar dots
+  const dotPcs = document.getElementById('dot-pcs');
+  const dotWos = document.getElementById('dot-wos');
+  const lblPcs = document.getElementById('lbl-pcs');
+  const lblWos = document.getElementById('lbl-wos');
+  const tbPrimary = document.getElementById('tb-primary');
+  const badge  = document.getElementById('ent-api-badge');
+  const btext  = document.getElementById('ent-api-text');
 
-        document.addEventListener('click', function() {
-            window.focus();
-        });
-    </script>
+  if (hasPCS) {
+    API_METHOD = 'pcs';
+    dotPcs.classList.add('ok'); lblPcs.textContent = 'Connected';
+    // Update all method tags to PCS
+    document.querySelectorAll('.method-tag').forEach(t=>{ t.textContent='PCS'; t.className='method-tag pcs'; });
+    if (badge) { badge.className='api-badge ok'; btext.textContent='ProcentricJS API active — native app launch enabled'; }
+    if (tbPrimary) tbPrimary.textContent = 'ProcentralJS.launchApp(appId)';
+  } else if (hasWOS) {
+    API_METHOD = 'webos';
+    dotPcs.classList.add('warn'); lblPcs.textContent = 'Not detected';
+    dotWos.classList.add('ok');   lblWos.textContent = 'Connected';
+    document.querySelectorAll('.method-tag').forEach(t=>{ t.textContent='wOS'; t.className='method-tag wos'; });
+    if (badge) { badge.className='api-badge warn'; btext.textContent='webOS Service API active — ProcentricJS not detected'; }
+    if (tbPrimary) tbPrimary.textContent = 'webOS.service.request (applicationManager/launch)';
+  } else {
+    API_METHOD = 'uri';
+    dotPcs.classList.add('warn'); lblPcs.textContent = 'Not detected';
+    dotWos.classList.add('warn'); lblWos.textContent = 'Not detected';
+    document.querySelectorAll('.method-tag').forEach(t=>{ t.textContent='URI'; t.className='method-tag uri'; });
+    if (badge) { badge.className='api-badge err'; btext.textContent='Fallback: sssp:// URI scheme (PCS & webOS APIs not detected)'; }
+    if (tbPrimary) tbPrimary.textContent = 'sssp:// URI scheme (fallback — verify PCS config)';
+  }
+  if (hasWOS && !hasPCS) { dotWos.classList.add('ok'); lblWos.textContent='Connected'; }
+  if (!hasWOS) { dotWos.classList.add('warn'); if(lblWos.textContent==='Detecting…') lblWos.textContent='Not detected'; }
+}
+
+// ═══════════════════════════════════════════════════════
+//  APP LAUNCH — 3-tier fallback
+// ═══════════════════════════════════════════════════════
+function launchApp(key, label) {
+  const ids = CONFIG.APP_IDS[key];
+  if (!ids) { showToast('⚠️ App ID not configured for: ' + key, 'warn'); return; }
+
+  showToast('🚀 Launching ' + label + '…', 'ok');
+
+  if (API_METHOD === 'pcs' && window.ProcentralJS) {
+    // METHOD 1: ProcentricJS (Procentric Server injected)
+    try {
+      window.ProcentralJS.launchApp(ids.pcs);
+    } catch(e) {
+      console.warn('PCS launchApp failed, trying webOS:', e);
+      launchViaWebOS(ids, label);
+    }
+  } else if (API_METHOD === 'webos' || window.webOS) {
+    launchViaWebOS(ids, label);
+  } else {
+    // METHOD 3: sssp URI scheme
+    launchViaURI(ids, label);
+  }
+}
+
+function launchViaWebOS(ids, label) {
+  // METHOD 2: webOS service request
+  try {
+    window.webOS.service.request('luna://com.webos.applicationManager', {
+      method: 'launch',
+      parameters: { id: ids.webos },
+      onSuccess: function(res) { console.log('webOS launch success:', res); },
+      onFailure: function(err) {
+        console.warn('webOS launch failed, trying URI:', err);
+        launchViaURI(ids, label);
+      }
+    });
+  } catch(e) {
+    launchViaURI(ids, label);
+  }
+}
+
+function launchViaURI(ids, label) {
+  // METHOD 3: sssp URI
+  try {
+    window.location.href = ids.uri;
+  } catch(e) {
+    showToast('⚠️ Could not launch ' + label + '. Check PCS config.', 'warn');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  TV CHANNEL TUNING
+// ═══════════════════════════════════════════════════════
+function tuneChannel(chNum, chName) {
+  showToast('📺 Tuning to ' + chName + '…', 'ok');
+
+  if (window.ProcentralJS && typeof window.ProcentralJS.tuneChannel === 'function') {
+    // ProcentricJS channel tuning
+    try { window.ProcentralJS.tuneChannel(chNum); return; } catch(e) {}
+  }
+  if (window.webOS) {
+    // webOS luna service channel tuning
+    try {
+      window.webOS.service.request('luna://com.webos.media', {
+        method: 'channel',
+        parameters: { channelNumber: chNum },
+        onSuccess: function(){},
+        onFailure: function(e){ console.warn('channel tune failed',e); }
+      });
+      return;
+    } catch(e) {}
+  }
+  // Fallback: sssp URI
+  window.location.href = 'sssp://v2/channel/tune?channelNumber=' + chNum;
+}
+
+// ═══════════════════════════════════════════════════════
+//  CHANNEL FILTER
+// ═══════════════════════════════════════════════════════
+function filterCh(cat, btn) {
+  document.querySelectorAll('.ch-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#ch-grid .ch-card').forEach(card=>{
+    if (cat === 'all' || card.dataset.cat === cat) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI UTILITIES
+// ═══════════════════════════════════════════════════════
+function openPanel(id) {
+  document.getElementById('home-screen').style.opacity='0';
+  document.getElementById('home-screen').style.pointerEvents='none';
+  document.getElementById('panel-'+id).classList.add('open');
+}
+function closePanel(id) {
+  document.getElementById('panel-'+id).classList.remove('open');
+  document.getElementById('home-screen').style.opacity='1';
+  document.getElementById('home-screen').style.pointerEvents='';
+}
+
+let toastTimer;
+function showToast(msg, type='ok') {
+  clearTimeout(toastTimer);
+  const el = document.getElementById('toast');
+  const icons = { ok:'✓', warn:'⚠️', err:'🚨' };
+  document.getElementById('t-icon').textContent = icons[type]||'✓';
+  document.getElementById('toast-msg').textContent = msg;
+  el.className = 'show toast-'+type;
+  toastTimer = setTimeout(()=>{ el.className=''; }, 3500);
+}
+
+function openModal(title, body) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').textContent = body;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+// Clock
+function updateClock() {
+  const d = new Date(), h = d.getHours(), m = d.getMinutes();
+  document.getElementById('clock').textContent =
+    String(((h%12)||12)).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ' ' + (h>=12?'PM':'AM');
+}
+updateClock(); setInterval(updateClock, 15000);
+
+// Room number from PCS if available
+if (typeof window.ProcentralJS !== 'undefined' && window.ProcentralJS.getRoomNumber) {
+  try { document.getElementById('lbl-room').textContent = window.ProcentralJS.getRoomNumber(); } catch(e){}
+}
+
+// Run detection after a short delay to allow PCS injection
+setTimeout(detectAPIs, 800);
+
+// Nav entrance animation
+document.querySelectorAll('.nav-card').forEach((c,i)=>{
+  c.style.opacity='0'; c.style.transform='translateY(14px)';
+  setTimeout(()=>{ c.style.transition='opacity .45s ease,transform .45s ease,border-color .32s,box-shadow .32s,background .32s'; c.style.opacity='1'; c.style.transform=''; }, 250+i*55);
+});
+</script>
 </body>
 </html>
