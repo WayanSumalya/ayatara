@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1280, height=720, initial-scale=1.0">
+    <title>Ayatara - Dining</title>
+    <style>
+        body {
+            margin: 0; width: 1280px; height: 720px;
+            background: url('bg-mewah.jpg') no-repeat center center;
+            background-size: cover; color: white;
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
+        }
+        .header {
+            padding: 40px 60px; font-size: 40px; color: #D4AF37;
+            text-transform: uppercase; letter-spacing: 3px;
+        }
+        
+        /* Grid Layout untuk Card */
+        .card-container {
+            display: flex; gap: 30px; padding: 0 60px;
+            transition: transform 0.3s ease;
+        }
+        .card {
+            width: 320px; height: 450px;
+            background: rgba(20, 20, 20, 0.8);
+            border: 2px solid transparent; border-radius: 12px;
+            overflow: hidden; transition: all 0.3s ease;
+            transform: translateY(50px); opacity: 0;
+            animation: slideUp 0.6s forwards;
+        }
+        .card img { width: 100%; height: 200px; object-fit: cover; }
+        .card-content { padding: 20px; }
+        .card h2 { margin: 0 0 10px 0; font-size: 28px; }
+        .card p { font-size: 18px; color: #ccc; }
+
+        /* MENGATUR STATE FOCUS DARI REMOTE TV */
+        .card.focused {
+            border: 3px solid #D4AF37;
+            transform: scale(1.05) translateY(0) !important;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+            background: rgba(40, 40, 40, 0.9);
+        }
+
+        /* Animasi masuk pertama kali */
+        @keyframes slideUp { to { transform: translateY(0); opacity: 1; } }
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+
+        /* Modal Galeri/Detail */
+        #detail-modal {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 10;
+            display: none; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        #detail-modal.show { display: flex; opacity: 1; }
+        .modal-content {
+            width: 900px; height: 500px; background: #1a1a1a;
+            border: 2px solid #D4AF37; border-radius: 10px;
+            padding: 40px; display: flex; gap: 40px;
+        }
+        .modal-img { width: 400px; height: 100%; object-fit: cover; border-radius: 8px;}
+        .modal-info h1 { color: #D4AF37; margin-top: 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header">Exclusive Dining</div>
+    
+    <div class="card-container" id="grid">
+        <div class="card focused" data-title="Ayatara Signature Resto" data-desc="Nikmati hidangan lokal dan internasional yang disiapkan oleh koki bintang 5 kami." data-img="https://source.unsplash.com/600x400/?restaurant,luxury">
+            <img src="https://source.unsplash.com/600x400/?restaurant,luxury" alt="Resto">
+            <div class="card-content">
+                <h2>Signature Resto</h2>
+                <p>Fine dining experience with a stunning view.</p>
+            </div>
+        </div>
+        <div class="card" data-title="Sunset Bar" data-desc="Cocktail eksklusif dengan pemandangan matahari terbenam." data-img="https://source.unsplash.com/600x400/?bar,cocktail">
+            <img src="https://source.unsplash.com/600x400/?bar,cocktail" alt="Bar">
+            <div class="card-content">
+                <h2>Sunset Bar</h2>
+                <p>Exclusive cocktails by the pool.</p>
+            </div>
+        </div>
+        <div class="card" data-title="In-Villa Dining" data-desc="Pesan makanan langsung ke villa Anda, privasi terjaga 24 jam." data-img="https://source.unsplash.com/600x400/?room,food">
+            <img src="https://source.unsplash.com/600x400/?room,food" alt="In-room">
+            <div class="card-content">
+                <h2>In-Villa Dining</h2>
+                <p>24/7 private dining service.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="detail-modal">
+        <div class="modal-content">
+            <img id="m-img" class="modal-img" src="" alt="Gallery">
+            <div class="modal-info">
+                <h1 id="m-title">Title</h1>
+                <p id="m-desc" style="font-size: 22px; line-height: 1.6;">Description</p>
+                <p style="color: #888; margin-top: 40px; font-size: 18px;">[Tekan tombol BACK untuk kembali]</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- SPATIAL NAVIGATION LOGIC (REMOTE WEBOS) ---
+        const cards = document.querySelectorAll('.card');
+        const modal = document.getElementById('detail-modal');
+        let currentIndex = 0;
+        let isModalOpen = false;
+
+        function updateFocus() {
+            cards.forEach(card => card.classList.remove('focused'));
+            cards[currentIndex].classList.add('focused');
+        }
+
+        function openModal() {
+            const activeCard = cards[currentIndex];
+            document.getElementById('m-title').innerText = activeCard.getAttribute('data-title');
+            document.getElementById('m-desc').innerText = activeCard.getAttribute('data-desc');
+            document.getElementById('m-img').src = activeCard.getAttribute('data-img');
+            
+            modal.classList.add('show');
+            isModalOpen = true;
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+            isModalOpen = false;
+        }
+
+        // Listener untuk event Remote TV
+        document.addEventListener('keydown', function(e) {
+            if (isModalOpen) {
+                // Jika modal terbuka, tombol BACK (461) atau Escape (27, untuk testing di PC) menutup modal
+                if (e.keyCode === 461 || e.keyCode === 27) {
+                    closeModal();
+                    // Cegah TV kembali ke menu Pro:Centric secara default
+                    e.preventDefault(); 
+                }
+                return; // Hentikan navigasi D-pad saat modal terbuka
+            }
+
+            switch(e.keyCode) {
+                case 39: // Kanan
+                    if (currentIndex < cards.length - 1) {
+                        currentIndex++;
+                        updateFocus();
+                    }
+                    break;
+                case 37: // Kiri
+                    if (currentIndex > 0) {
+                        currentIndex--;
+                        updateFocus();
+                    }
+                    break;
+                case 13: // OK / Enter
+                    openModal();
+                    break;
+                case 461: // BACK
+                    // Jika tidak ada modal terbuka, biarkan event ini diteruskan ke LG Pro:Centric 
+                    // agar kembali ke halaman portal utama.
+                    break; 
+            }
+        });
+    </script>
+</body>
+</html>
