@@ -3,118 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=1280, height=720, initial-scale=1.0">
-    <title>Ayatara Resort Portal</title>
+    <title>Ayatara Resort - Welcome Portal</title>
     <style>
+        /* Reset & Setup Resolusi TV */
         body, html {
             margin: 0; padding: 0;
             width: 1280px; height: 720px;
-            background-color: #111;
-            overflow: hidden;
+            background-color: #050505;
+            overflow: hidden; /* Mencegah scrollbar */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        /* Slider Background */
-        #slider-container {
-            width: 100%; height: 100%;
+
+        /* --- SLIDER BACKGROUND --- */
+        #slider-bg {
             position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
             z-index: 1;
         }
         .slide {
-            width: 100%; height: 100%;
             position: absolute; top: 0; left: 0;
-            background-size: cover; background-position: center;
-            opacity: 0; transition: opacity 2s ease-in-out;
+            width: 100%; height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 2s ease-in-out; /* Efek fade 2 detik */
         }
-        .slide.active { opacity: 1; }
-        
-        /* Overlay Gradient untuk kemewahan dan teks lebih terbaca */
+        .slide.active {
+            opacity: 1;
+        }
+
+        /* --- OVERLAY GRADIENT --- */
+        /* Gelap di kiri untuk teks, transparan di kanan untuk menu Pro:Centric */
         .overlay {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%);
+            background: linear-gradient(to right, rgba(10,10,10,0.85) 0%, rgba(10,10,10,0.4) 45%, rgba(10,10,10,0) 100%);
             z-index: 2;
         }
 
-        /* Canvas untuk Gold Dust */
+        /* --- CANVAS DEBU EMAS --- */
         #gold-dust {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 3; pointer-events: none;
+            z-index: 3;
+            pointer-events: none; /* Agar tidak mengganggu klik remote */
         }
 
-        /* Informasi Dinamis */
-        .dynamic-info {
+        /* --- TEKS INFORMASI --- */
+        .content-area {
             position: absolute; top: 50%; left: 80px;
             transform: translateY(-50%);
             z-index: 4; color: #fff;
+            max-width: 550px;
         }
-        .dynamic-info h1 {
-            font-size: 56px; margin: 0; color: #D4AF37; /* Gold Accent */
-            text-transform: uppercase; letter-spacing: 4px;
+        .content-area h1 {
+            font-size: 60px; margin: 0 0 15px 0;
+            color: #D4AF37; /* Warna Emas Ayatara */
+            text-transform: uppercase; letter-spacing: 6px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+            font-weight: 300;
         }
-        .dynamic-info p {
-            font-size: 24px; font-weight: 300; max-width: 500px;
-            line-height: 1.5; text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
+        .content-area p {
+            font-size: 22px; line-height: 1.6;
+            color: #e0e0e0; margin: 0;
+            text-shadow: 1px 1px 5px rgba(0,0,0,0.9);
+            font-weight: 300;
         }
     </style>
 </head>
 <body>
 
-    <div id="slider-container">
-        <div class="slide active" style="background-image: url('https://source.unsplash.com/1280x720/?luxury,resort');"></div>
-        <div class="slide" style="background-image: url('https://source.unsplash.com/1280x720/?villa,pool');"></div>
+    <div id="slider-bg">
+        <div class="slide active" style="background-image: url('foto1.jpg');"></div>
+        <div class="slide" style="background-image: url('foto2.jpg');"></div>
+        <div class="slide" style="background-image: url('foto3.jpg');"></div>
     </div>
 
     <div class="overlay"></div>
     <canvas id="gold-dust"></canvas>
 
-    <div class="dynamic-info">
-        <h1>Welcome to Ayatara</h1>
-        <p id="guest-message">Experience unparalleled luxury and tranquility.</p>
+    <div class="content-area">
+        <h1>Ayatara Resort</h1>
+        <p>Selamat datang di surga ketenangan. Nikmati kemewahan dan pelayanan tak terlupakan selama Anda menginap bersama kami.</p>
     </div>
 
     <script>
-        // --- 1. SLIDER LOGIC ---
+        // 1. LOGIKA SLIDER GAMBAR
         const slides = document.querySelectorAll('.slide');
-        let currentSlide = 0;
+        let currentSlideIndex = 0;
+        
+        // Ganti gambar setiap 6 detik (6000 ms)
         setInterval(() => {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 6000); // Ganti gambar tiap 6 detik
+            slides[currentSlideIndex].classList.remove('active');
+            currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+            slides[currentSlideIndex].classList.add('active');
+        }, 6000);
 
-        // --- 2. GOLD DUST MOTION EFFECT ---
+        // 2. LOGIKA PARTIKEL DEBU EMAS (GOLD DUST)
         const canvas = document.getElementById('gold-dust');
         const ctx = canvas.getContext('2d');
         canvas.width = 1280; canvas.height = 720;
-        
-        let particles = [];
-        for(let i = 0; i < 80; i++) { // Jumlah debu emas
-            particles.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                radius: Math.random() * 2 + 0.5,
-                vx: Math.random() * 0.5 - 0.25,
-                vy: Math.random() * -0.5 - 0.2, // Melayang ke atas
-                alpha: Math.random() * 0.6 + 0.4
-            });
+
+        const particlesArray = [];
+        const numberOfParticles = 70; // Sesuaikan jumlah debu (jangan terlalu banyak agar TV tidak berat)
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5; // Ukuran bervariasi
+                this.speedX = Math.random() * 0.4 - 0.2; // Bergerak ke kiri/kanan sedikit
+                this.speedY = Math.random() * -0.6 - 0.2; // Melayang pelan ke atas
+                this.opacity = Math.random() * 0.6 + 0.2; // Transparansi bervariasi
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // Jika debu keluar dari atas layar, munculkan lagi dari bawah
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`; // Warna debu emas
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
 
-        function drawDust() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach(p => {
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(212, 175, 55, ${p.alpha})`; // #D4AF37 Gold
-                ctx.fill();
-                p.x += p.vx; p.y += p.vy;
-                // Reset jika keluar layar
-                if(p.y < 0) p.y = canvas.height;
-                if(p.x < 0) p.x = canvas.width;
-                if(p.x > canvas.width) p.x = 0;
-            });
-            requestAnimationFrame(drawDust);
+        // Buat partikel pertama kali
+        for (let i = 0; i < numberOfParticles; i++) {
+            particlesArray.push(new Particle());
         }
-        drawDust();
+
+        // Animasi Loop Partikel
+        function animateDust() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateDust);
+        }
+        animateDust();
     </script>
 </body>
 </html>
