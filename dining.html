@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=1280, height=720, initial-scale=1.0">
     <title>Ayatara - Dining Menu</title>
     <style>
-        /* CSS Reset & Basic Setup untuk Layar TV */
         * { box-sizing: border-box; }
         body, html {
             margin: 0; padding: 0;
@@ -17,7 +16,6 @@
             color: #fff;
         }
 
-        /* Overlay Gelap agar Teks Terbaca */
         .bg-overlay {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
@@ -25,7 +23,6 @@
             z-index: 1;
         }
 
-        /* Header Layout */
         .header {
             position: absolute; top: 50px; left: 80px; z-index: 2;
         }
@@ -35,13 +32,11 @@
         }
         .header p { margin: 5px 0 0 0; font-size: 20px; color: #ccc; }
 
-        /* Card Slider Layout */
         .slider-container {
             position: absolute; top: 220px; left: 80px; z-index: 2;
             display: flex; gap: 40px; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* Glassmorphism Card Style */
         .card {
             width: 340px; height: 400px;
             background: rgba(255, 255, 255, 0.05);
@@ -58,7 +53,6 @@
         .card-info h2 { margin: 0 0 10px 0; font-size: 26px; font-weight: 500; }
         .card-info p { margin: 0; font-size: 16px; color: #aaa; line-height: 1.4; }
 
-        /* ACTIVE / FOCUSED STATE DARI REMOTE TV */
         .card.active {
             opacity: 1; transform: scale(1);
             border: 2px solid #D4AF37;
@@ -66,7 +60,6 @@
             box-shadow: 0 15px 35px rgba(212, 175, 55, 0.2);
         }
 
-        /* Modal / Pop-up Detail Informasi */
         #detail-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.95); z-index: 10;
@@ -135,14 +128,11 @@
     </div>
 
     <script>
-        // 1. REBUT FOKUS
         window.onload = function() {
             window.focus(); 
         };
 
-        // 2. LOGIKA NAVIGASI SPATIAL
         const cards = document.querySelectorAll('.card');
-        const slider = document.getElementById('slider');
         const modal = document.getElementById('detail-modal');
         let currentIndex = 0;
         let isModalOpen = false;
@@ -167,10 +157,9 @@
             isModalOpen = false;
         }
 
-        // 3. EVENT LISTENER REMOTE KONTROL
         document.addEventListener('keydown', function(e) {
+            // Jika modal terbuka, tombol back / escape hanya menutup modal
             if (isModalOpen) {
-                // Jika modal terbuka, tombol BACK menutup modal
                 if (e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8) {
                     hideDetail();
                     e.preventDefault(); 
@@ -194,23 +183,44 @@
                 case 13: // Tombol OK / Enter
                     showDetail();
                     break;
-                case 461: // Tombol BACK Remote LG
-                case 8:   // Tombol Backspace (untuk testing di PC)
-                case 27:  // Tombol Escape (untuk testing di PC)
+                
+                // MENGATASI TOMBOL BACK (461) UNTUK LG PRO:CENTRIC
+                case 461: // Back Remote LG
+                case 8:   // Backspace (Testing PC)
+                case 27:  // Escape (Testing PC)
+                    e.preventDefault();
+                    
+                    // Metode 1: Mengirim pesan ke Pro:Centric Direct untuk menutup widget
+                    window.parent.postMessage({ type: 'closeWidget' }, '*');
+                    window.parent.postMessage('closeWidget', '*');
+                    
+                    // Metode 2: API HCAP LG WebOS (Jika diizinkan membaca parent)
                     try {
-                        // Perintahkan parent window (Pro:Centric) untuk kembali
+                        if (typeof hcap !== 'undefined' && hcap.mode) {
+                            hcap.mode.setPortalMode();
+                        } else if (window.parent && window.parent.hcap && window.parent.hcap.mode) {
+                            window.parent.hcap.mode.setPortalMode();
+                        }
+                    } catch (err) {
+                        console.log("CORS HCAP Blocked: " + err);
+                    }
+
+                    // Metode 3: API NetCast LG WebOS versi lama
+                    try {
+                        if (typeof window.NetCastReturn !== 'undefined') window.NetCastReturn(0);
+                        if (typeof window.NetCastExit !== 'undefined') window.NetCastExit();
+                    } catch (err) {}
+
+                    // Metode 4: Fallback history browser standar
+                    try {
                         if (window.parent !== window) {
                             window.parent.history.back();
                         } else {
-                            // Jika dibuka langsung tanpa iframe
                             window.history.back();
                         }
-                    } catch (error) {
-                        console.error("Gagal melakukan aksi back:", error);
-                        // Jika strict cross-origin memblokir history.back, Anda bisa mengaktifkan baris di bawah
-                        // window.parent.location.href = 'index.html'; 
+                    } catch (err) {
+                        console.log("CORS History Blocked: " + err);
                     }
-                    e.preventDefault();
                     break;
             }
         });
