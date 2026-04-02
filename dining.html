@@ -10,12 +10,10 @@
         body, html {
             margin: 0; padding: 0;
             width: 1280px; height: 720px;
-            /* Background transparan jika ingin background dari Pro:Centric terlihat, 
-               atau berikan gambar background spesifik */
             background: url('https://source.unsplash.com/1280x720/?luxury,restaurant,dark') no-repeat center center;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden; /* Wajib agar tidak muncul scrollbar di TV */
+            overflow: hidden; 
             color: #fff;
         }
 
@@ -32,7 +30,7 @@
             position: absolute; top: 50px; left: 80px; z-index: 2;
         }
         .header h1 {
-            margin: 0; font-size: 48px; color: #D4AF37; /* Gold Ayatara */
+            margin: 0; font-size: 48px; color: #D4AF37; 
             text-transform: uppercase; letter-spacing: 4px; font-weight: 300;
         }
         .header p { margin: 5px 0 0 0; font-size: 20px; color: #ccc; }
@@ -47,7 +45,7 @@
         .card {
             width: 340px; height: 400px;
             background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px); /* Efek kaca */
+            backdrop-filter: blur(10px); 
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px; overflow: hidden;
@@ -137,7 +135,7 @@
     </div>
 
     <script>
-        // 1. REBUT FOKUS (CRITICAL UNTUK IFRAME)
+        // 1. REBUT FOKUS
         window.onload = function() {
             window.focus(); 
         };
@@ -150,17 +148,8 @@
         let isModalOpen = false;
 
         function updateUI() {
-            // Hapus status aktif dari semua card
             cards.forEach(card => card.classList.remove('active'));
-            // Tambahkan status aktif ke card yang dipilih
             cards[currentIndex].classList.add('active');
-            
-            // Opsional: Geser container jika card lebih dari 3 (agar fokus selalu di tengah)
-            // if (currentIndex > 1) {
-            //    slider.style.transform = `translateX(-${(currentIndex - 1) * 380}px)`;
-            // } else {
-            //    slider.style.transform = `translateX(0px)`;
-            // }
         }
 
         function showDetail() {
@@ -181,12 +170,12 @@
         // 3. EVENT LISTENER REMOTE KONTROL
         document.addEventListener('keydown', function(e) {
             if (isModalOpen) {
-                // Jika modal terbuka, tombol BACK (461) atau Escape (27) hanya menutup modal
-                if (e.keyCode === 461 || e.keyCode === 27) {
+                // Jika modal terbuka, tombol BACK menutup modal
+                if (e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8) {
                     hideDetail();
-                    e.preventDefault(); // Cegah TV keluar dari halaman
+                    e.preventDefault(); 
                 }
-                return; // Stop eksekusi agar D-Pad tidak memindah card di belakang modal
+                return; 
             }
 
             switch(e.keyCode) {
@@ -205,15 +194,27 @@
                 case 13: // Tombol OK / Enter
                     showDetail();
                     break;
-                case 461: // Tombol BACK
-                    // Jika modal sudah tertutup dan tombol back ditekan lagi,
-                    // biarkan event ini mengalir (bubble) agar Pro:Centric mendeteksinya
-                    // dan mengembalikan tamu ke Portal Utama.
+                case 461: // Tombol BACK Remote LG
+                case 8:   // Tombol Backspace (untuk testing di PC)
+                case 27:  // Tombol Escape (untuk testing di PC)
+                    try {
+                        // Perintahkan parent window (Pro:Centric) untuk kembali
+                        if (window.parent !== window) {
+                            window.parent.history.back();
+                        } else {
+                            // Jika dibuka langsung tanpa iframe
+                            window.history.back();
+                        }
+                    } catch (error) {
+                        console.error("Gagal melakukan aksi back:", error);
+                        // Jika strict cross-origin memblokir history.back, Anda bisa mengaktifkan baris di bawah
+                        // window.parent.location.href = 'index.html'; 
+                    }
+                    e.preventDefault();
                     break;
             }
         });
 
-        // Pastikan klik di luar area juga me-rebut fokus kembali (untuk jaga-jaga)
         document.addEventListener('click', function() {
             window.focus();
         });
