@@ -9,7 +9,7 @@
         body, html {
             margin: 0; padding: 0;
             width: 1280px; height: 720px;
-            background: url('https://source.unsplash.com/1280x720/?luxury,restaurant,dark') no-repeat center center;
+            background: url('https://wayansumalya.github.io/ayatara/asset/promo-dinig.jpg') no-repeat center center;
             background-size: cover;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden; 
@@ -19,10 +19,11 @@
         .bg-overlay {
             position: absolute; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: linear-gradient(135deg, rgba(15,15,15,0.9) 0%, rgba(15,15,15,0.4) 100%);
+            background: linear-gradient(135deg, rgba(15,15,15,0.95) 0%, rgba(15,15,15,0.4) 100%);
             z-index: 1;
         }
 
+        /* --- HEADER --- */
         .header {
             position: absolute; top: 50px; left: 80px; z-index: 2;
         }
@@ -32,6 +33,28 @@
         }
         .header p { margin: 5px 0 0 0; font-size: 20px; color: #ccc; }
 
+        /* --- TOMBOL KEMBALI VISUAL --- */
+        #btn-back {
+            position: absolute; top: 50px; right: 80px; z-index: 5;
+            padding: 15px 30px;
+            background: rgba(20, 20, 20, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #fff; font-size: 22px; font-weight: bold;
+            transition: all 0.3s ease;
+            display: flex; align-items: center; gap: 10px;
+        }
+        
+        /* State Saat Tombol Kembali Fokus */
+        #btn-back.focused {
+            border: 2px solid #D4AF37;
+            background: rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            transform: scale(1.05);
+            color: #D4AF37;
+        }
+
+        /* --- CARD SLIDER --- */
         .slider-container {
             position: absolute; top: 220px; left: 80px; z-index: 2;
             display: flex; gap: 40px; transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -53,6 +76,7 @@
         .card-info h2 { margin: 0 0 10px 0; font-size: 26px; font-weight: 500; }
         .card-info p { margin: 0; font-size: 16px; color: #aaa; line-height: 1.4; }
 
+        /* State Saat Card Fokus */
         .card.active {
             opacity: 1; transform: scale(1);
             border: 2px solid #D4AF37;
@@ -60,6 +84,7 @@
             box-shadow: 0 15px 35px rgba(212, 175, 55, 0.2);
         }
 
+        /* --- MODAL DETAIL --- */
         #detail-modal {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.95); z-index: 10;
@@ -87,7 +112,11 @@
 
     <div class="header">
         <h1>Culinary Journey</h1>
-        <p>Gunakan remote (Kiri/Kanan) untuk memilih, tekan OK untuk detail.</p>
+        <p>Gunakan tombol (Atas/Bawah/Kiri/Kanan) di remote.</p>
+    </div>
+
+    <div id="btn-back">
+        &#8592; Kembali ke Portal
     </div>
 
     <div class="slider-container" id="slider">
@@ -122,7 +151,7 @@
             <div class="modal-text">
                 <h2 id="modal-title">Title</h2>
                 <p id="modal-desc">Description goes here.</p>
-                <div class="modal-hint">Tekan BACK untuk menutup</div>
+                <div class="modal-hint">Tekan OK atau BACK untuk menutup</div>
             </div>
         </div>
     </div>
@@ -133,17 +162,31 @@
         };
 
         const cards = document.querySelectorAll('.card');
+        const btnBack = document.getElementById('btn-back');
         const modal = document.getElementById('detail-modal');
-        let currentIndex = 0;
+        
+        let currentCardIndex = 0;
         let isModalOpen = false;
+        // Status fokus area: 'cards' (kartu menu) atau 'backButton' (tombol kembali)
+        let focusArea = 'cards'; 
 
         function updateUI() {
+            // Hapus semua fokus terlebih dahulu
             cards.forEach(card => card.classList.remove('active'));
-            cards[currentIndex].classList.add('active');
+            btnBack.classList.remove('focused');
+
+            // Berikan fokus sesuai area yang aktif
+            if (focusArea === 'cards') {
+                cards[currentCardIndex].classList.add('active');
+            } else if (focusArea === 'backButton') {
+                btnBack.classList.add('focused');
+                // Tetap biarkan kartu terakhir sedikit menyala agar UI tidak terlihat mati
+                cards[currentCardIndex].classList.add('active');
+            }
         }
 
         function showDetail() {
-            const activeCard = cards[currentIndex];
+            const activeCard = cards[currentCardIndex];
             document.getElementById('modal-title').innerText = activeCard.getAttribute('data-title');
             document.getElementById('modal-desc').innerText = activeCard.getAttribute('data-desc');
             document.getElementById('modal-img').src = activeCard.getAttribute('data-img');
@@ -157,70 +200,64 @@
             isModalOpen = false;
         }
 
+        // EVENT LISTENER REMOTE KONTROL (SPATIAL NAVIGATION)
         document.addEventListener('keydown', function(e) {
-            // Jika modal terbuka, tombol back / escape hanya menutup modal
+            
+            // Jika Modal Detail sedang Terbuka
             if (isModalOpen) {
-                if (e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8) {
+                // Tombol OK(13), Back(461), Escape(27), Backspace(8) akan menutup modal
+                if (e.keyCode === 13 || e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8) {
                     hideDetail();
                     e.preventDefault(); 
                 }
-                return; 
+                return; // Stop navigasi D-pad saat modal terbuka
             }
 
+            // Jika Modal Detail Tertutup (Navigasi Halaman Utama)
             switch(e.keyCode) {
                 case 39: // Tombol Kanan
-                    if (currentIndex < cards.length - 1) {
-                        currentIndex++;
+                    if (focusArea === 'cards' && currentCardIndex < cards.length - 1) {
+                        currentCardIndex++;
                         updateUI();
                     }
                     break;
+
                 case 37: // Tombol Kiri
-                    if (currentIndex > 0) {
-                        currentIndex--;
+                    if (focusArea === 'cards' && currentCardIndex > 0) {
+                        currentCardIndex--;
                         updateUI();
                     }
                     break;
-                case 13: // Tombol OK / Enter
-                    showDetail();
+
+                case 38: // Tombol Atas
+                    if (focusArea === 'cards') {
+                        focusArea = 'backButton'; // Pindah fokus ke tombol kembali
+                        updateUI();
+                    }
                     break;
-                
-                // MENGATASI TOMBOL BACK (461) UNTUK LG PRO:CENTRIC
-                case 461: // Back Remote LG
-                case 8:   // Backspace (Testing PC)
-                case 27:  // Escape (Testing PC)
+
+                case 40: // Tombol Bawah
+                    if (focusArea === 'backButton') {
+                        focusArea = 'cards'; // Kembali fokus ke kartu
+                        updateUI();
+                    }
+                    break;
+
+                case 13: // Tombol OK / Enter
+                    if (focusArea === 'backButton') {
+                        // Redirect langsung iframe ini memuat file index.html
+                        window.location.href = 'index.html'; 
+                    } else if (focusArea === 'cards') {
+                        showDetail();
+                    }
+                    break;
+
+                // Tetap simpan fallback Back jika sewaktu-waktu terbaca oleh sistem
+                case 461: 
+                case 8: 
+                case 27: 
+                    window.location.href = 'index.html';
                     e.preventDefault();
-                    
-                    // Metode 1: Mengirim pesan ke Pro:Centric Direct untuk menutup widget
-                    window.parent.postMessage({ type: 'closeWidget' }, '*');
-                    window.parent.postMessage('closeWidget', '*');
-                    
-                    // Metode 2: API HCAP LG WebOS (Jika diizinkan membaca parent)
-                    try {
-                        if (typeof hcap !== 'undefined' && hcap.mode) {
-                            hcap.mode.setPortalMode();
-                        } else if (window.parent && window.parent.hcap && window.parent.hcap.mode) {
-                            window.parent.hcap.mode.setPortalMode();
-                        }
-                    } catch (err) {
-                        console.log("CORS HCAP Blocked: " + err);
-                    }
-
-                    // Metode 3: API NetCast LG WebOS versi lama
-                    try {
-                        if (typeof window.NetCastReturn !== 'undefined') window.NetCastReturn(0);
-                        if (typeof window.NetCastExit !== 'undefined') window.NetCastExit();
-                    } catch (err) {}
-
-                    // Metode 4: Fallback history browser standar
-                    try {
-                        if (window.parent !== window) {
-                            window.parent.history.back();
-                        } else {
-                            window.history.back();
-                        }
-                    } catch (err) {
-                        console.log("CORS History Blocked: " + err);
-                    }
                     break;
             }
         });
