@@ -8,108 +8,64 @@
         /* =========================================
            1. SETUP GLOBAL & BACKGROUND
         ========================================= */
-        * { box-sizing: border-box; outline: none; /* Hilangkan outline default browser */ }
+        * { box-sizing: border-box; outline: none; }
         body, html {
-            margin: 0; padding: 0;
-            width: 1280px; height: 720px;
-            background-color: #050505;
-            overflow: hidden; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #fff;
+            margin: 0; padding: 0; width: 1280px; height: 720px;
+            background-color: #050505; overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #fff;
         }
 
         #slider-bg { position: absolute; inset: 0; z-index: 1; }
         .slide {
-            position: absolute; inset: 0;
-            background-size: cover; background-position: center;
-            opacity: 0; transform: scale(1);
-            transition: opacity 2s ease-in-out, transform 10s linear; 
+            position: absolute; inset: 0; background-size: cover; background-position: center;
+            opacity: 0; transform: scale(1); transition: opacity 2s ease-in-out, transform 10s linear; 
         }
         .slide.active { opacity: 1; transform: scale(1.08); }
-
         .overlay {
             position: absolute; inset: 0; z-index: 2;
             background: linear-gradient(135deg, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.4) 50%, rgba(10,10,10,0.8) 100%);
         }
-
         #gold-dust { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
 
         /* =========================================
            2. FOKUS REMOTE (SPATIAL NAVIGATION CSS)
         ========================================= */
-        /* Semua elemen yang bisa diklik akan diberi class .nav-item */
-        .nav-item {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        /* EFEK FOKUS SAAT DISOROT REMOTE */
+        .nav-item { cursor: pointer; transition: all 0.3s ease; }
         .nav-item:focus, .nav-item.focused {
             border: 3px solid #D4AF37 !important;
             box-shadow: 0 0 25px rgba(212, 175, 55, 0.6) !important;
-            transform: scale(1.05) !important;
-            z-index: 100;
+            transform: scale(1.05) !important; z-index: 100;
         }
 
         /* =========================================
-           3. TAMPILAN HOME
+           3. TAMPILAN HALAMAN (SPA)
         ========================================= */
         .view-section {
-            position: absolute; inset: 0; z-index: 10;
-            display: none; /* Disembunyikan secara default */
-            opacity: 0; transition: opacity 0.4s ease;
+            position: absolute; inset: 0; z-index: 10; display: none; opacity: 0; transition: opacity 0.4s ease;
         }
-        .view-section.active {
-            display: flex; opacity: 1;
-        }
+        .view-section.active { display: flex; opacity: 1; }
 
-        #view-home {
-            align-items: center; justify-content: space-between;
-            padding: 0 80px;
-        }
-
+        /* -- Home -- */
+        #view-home { align-items: center; justify-content: space-between; padding: 0 80px; }
         .welcome-text { max-width: 550px; }
-        .welcome-text h1 {
-            font-size: 64px; margin: 0 0 10px 0; color: #D4AF37; 
-            text-transform: uppercase; letter-spacing: 6px; font-weight: 300;
-        }
+        .welcome-text h1 { font-size: 64px; margin: 0 0 10px 0; color: #D4AF37; text-transform: uppercase; letter-spacing: 6px; font-weight: 300; }
         .welcome-text p { font-size: 22px; line-height: 1.6; color: #ccc; font-weight: 300; }
-
         .main-menu { display: flex; flex-direction: column; gap: 15px; width: 350px; }
         .menu-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            padding: 18px 25px; border-radius: 12px;
-            font-size: 22px; color: #fff; text-transform: uppercase; letter-spacing: 2px;
-            backdrop-filter: blur(10px);
-            display: flex; align-items: center; gap: 15px;
+            background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 18px 25px; border-radius: 12px; font-size: 22px; color: #fff; text-transform: uppercase; letter-spacing: 2px;
+            backdrop-filter: blur(10px); display: flex; align-items: center; gap: 15px;
         }
         .menu-btn:focus { background: rgba(212, 175, 55, 0.2); color: #D4AF37; transform: translateX(-15px) scale(1.05) !important; }
 
-        /* =========================================
-           4. TAMPILAN PANEL (SUB-MENU)
-        ========================================= */
-        .panel-layout {
-            flex-direction: column; padding: 50px 80px;
-            background: linear-gradient(0deg, rgba(5,5,5,0.95) 0%, rgba(5,5,5,0.7) 100%);
-        }
-
+        /* -- Panel -- */
+        .panel-layout { flex-direction: column; padding: 50px 80px; background: linear-gradient(0deg, rgba(5,5,5,0.95) 0%, rgba(5,5,5,0.7) 100%); }
         .panel-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; }
         .panel-header h2 { font-size: 48px; color: #D4AF37; margin: 0; font-weight: 300; text-transform: uppercase; letter-spacing: 4px; }
         .panel-header p { font-size: 20px; color: #aaa; margin: 5px 0 0 0; }
-        
-        .btn-back {
-            background: rgba(255,255,255,0.1); border: 2px solid transparent;
-            padding: 10px 20px; border-radius: 8px; color: #fff; font-size: 18px;
-            display: flex; align-items: center; gap: 10px;
-        }
-
+        .btn-back { background: rgba(255,255,255,0.1); border: 2px solid transparent; padding: 10px 20px; border-radius: 8px; color: #fff; font-size: 18px; display: flex; align-items: center; gap: 10px; }
         .card-container { display: flex; gap: 30px; }
-        .card {
-            width: 330px; height: 420px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 16px; overflow: hidden; opacity: 0.8;
-        }
+        .card { width: 330px; height: 420px; background: rgba(255, 255, 255, 0.05); border: 2px solid rgba(255, 255, 255, 0.1); border-radius: 16px; overflow: hidden; opacity: 0.8; }
         .card img { width: 100%; height: 220px; object-fit: cover; }
         .card-info { padding: 25px; }
         .card-info h3 { margin: 0 0 10px 0; font-size: 24px; font-weight: 500; color: #fff; }
@@ -118,35 +74,29 @@
         /* Khusus Card App (Netflix/YouTube) */
         .card.app-card { background: linear-gradient(135deg, #111, #222); text-align: center; }
         .card.app-card img { height: 260px; }
-        .card.app-card .app-badge { 
-            display: inline-block; margin-top: 15px; background: #D4AF37; color: #000; 
-            padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; text-transform: uppercase;
-        }
+        .card.app-card .app-badge { display: inline-block; margin-top: 15px; background: #D4AF37; color: #000; padding: 8px 20px; border-radius: 20px; font-weight: bold; font-size: 14px; text-transform: uppercase; }
 
         /* =========================================
-           5. MODAL DETAIL POP-UP
+           4. MODAL & TOAST (NOTIFIKASI)
         ========================================= */
-        #detail-modal {
-            position: absolute; inset: 0; z-index: 50;
-            background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center;
-        }
+        #detail-modal { position: absolute; inset: 0; z-index: 50; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; }
         #detail-modal.active { display: flex; }
-        .modal-body {
-            display: flex; width: 1000px; height: 500px;
-            background: #111; border: 2px solid #D4AF37; border-radius: 16px; overflow: hidden;
-        }
+        .modal-body { display: flex; width: 1000px; height: 500px; background: #111; border: 2px solid #D4AF37; border-radius: 16px; overflow: hidden; }
         .modal-img-container { width: 50%; height: 100%; }
         .modal-img-container img { width: 100%; height: 100%; object-fit: cover; }
         .modal-text { width: 50%; padding: 50px; display: flex; flex-direction: column; justify-content: center; }
         .modal-text h2 { color: #D4AF37; font-size: 38px; margin: 0 0 15px 0; }
         .modal-text p { font-size: 18px; color: #ddd; line-height: 1.7; flex-grow: 1; }
-        
-        .btn-close-modal {
-            background: #D4AF37; color: #000; border: 2px solid transparent;
-            padding: 12px 25px; border-radius: 8px; font-size: 16px; font-weight: bold; text-transform: uppercase;
-            align-self: flex-start;
+        .btn-close-modal { background: #D4AF37; color: #000; border: 2px solid transparent; padding: 12px 25px; border-radius: 8px; font-size: 16px; font-weight: bold; text-transform: uppercase; align-self: flex-start; }
+
+        /* Toast Notifikasi saat buka App */
+        #toast {
+            position: fixed; top: 40px; right: 40px; z-index: 999;
+            background: rgba(212, 175, 55, 0.9); color: #000; font-weight: bold; font-size: 18px;
+            padding: 15px 30px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transform: translateX(200%); transition: transform 0.4s ease;
         }
+        #toast.show { transform: translateX(0); }
 
     </style>
 </head>
@@ -160,77 +110,60 @@
     <div class="overlay"></div>
     <canvas id="gold-dust"></canvas>
 
+    <div id="toast">🚀 Membuka Aplikasi...</div>
+
     <div id="view-home" class="view-section active">
         <div class="welcome-text">
             <h1>Ayatara Resort</h1>
             <p>Selamat datang di surga ketenangan. Nikmati kemewahan dan pelayanan tak terlupakan selama Anda menginap bersama kami.</p>
         </div>
-        <div class="main-menu" id="home-menu">
-            <div class="nav-item menu-btn" tabindex="0" onclick="openView('view-ent')"><span>🎬</span> Entertainment</div>
-            <div class="nav-item menu-btn" tabindex="0" onclick="openView('view-dining')"><span>🍽️</span> Culinary & Dining</div>
+        <div class="main-menu">
+            <div class="nav-item menu-btn" tabindex="0" data-target="view-ent"><span>🎬</span> Entertainment</div>
+            <div class="nav-item menu-btn" tabindex="0" data-target="view-dining"><span>🍽️</span> Culinary & Dining</div>
             <div class="nav-item menu-btn" tabindex="0" onclick="alert('Module in progress')"><span>🧖</span> Spa & Wellness</div>
         </div>
     </div>
 
     <div id="view-ent" class="view-section panel-layout">
         <div class="panel-header">
-            <div>
-                <h2>Entertainment</h2>
-                <p>Akses langsung ke aplikasi streaming favorit Anda.</p>
-            </div>
-            <div class="nav-item btn-back" tabindex="0" onclick="openView('view-home')">&#8617; Kembali</div>
+            <div><h2>Entertainment</h2><p>Akses langsung ke aplikasi streaming favorit Anda.</p></div>
+            <div class="nav-item btn-back" tabindex="0" data-target="view-home">&#8617; Kembali</div>
         </div>
         <div class="card-container">
-            <div class="nav-item card app-card" tabindex="0" onclick="launchSmartApp('netflix')">
+            <div class="nav-item card app-card" tabindex="0" data-action="launch" data-app="netflix" data-name="Netflix">
                 <img src="https://source.unsplash.com/800x600/?cinema,netflix" alt="Netflix">
-                <div class="card-info">
-                    <h3>Netflix</h3>
-                    <div class="app-badge">Buka Aplikasi</div>
-                </div>
+                <div class="card-info"><h3>Netflix</h3><div class="app-badge">Buka Aplikasi</div></div>
             </div>
-            <div class="nav-item card app-card" tabindex="0" onclick="launchSmartApp('youtube.leanback.v4')">
+            <div class="nav-item card app-card" tabindex="0" data-action="launch" data-app="youtube.leanback.v4" data-name="YouTube">
                 <img src="https://source.unsplash.com/800x600/?video,youtube" alt="YouTube">
-                <div class="card-info">
-                    <h3>YouTube</h3>
-                    <div class="app-badge">Buka Aplikasi</div>
-                </div>
+                <div class="card-info"><h3>YouTube</h3><div class="app-badge">Buka Aplikasi</div></div>
             </div>
         </div>
     </div>
 
     <div id="view-dining" class="view-section panel-layout">
         <div class="panel-header">
-            <div>
-                <h2>Culinary Journey</h2>
-                <p>Jelajahi sajian istimewa dari koki eksekutif kami.</p>
-            </div>
-            <div class="nav-item btn-back" tabindex="0" onclick="openView('view-home')">&#8617; Kembali</div>
+            <div><h2>Culinary Journey</h2><p>Jelajahi sajian istimewa dari koki eksekutif kami.</p></div>
+            <div class="nav-item btn-back" tabindex="0" data-target="view-home">&#8617; Kembali</div>
         </div>
         <div class="card-container">
-            <div class="nav-item card" tabindex="0" onclick="openModal('The Grand Restaurant', 'Nikmati sajian prasmanan internasional dan menu ala carte premium.', 'https://source.unsplash.com/800x600/?restaurant,fine-dining')">
+            <div class="nav-item card" tabindex="0" data-action="modal" data-title="The Grand Restaurant" data-desc="Sajian prasmanan internasional. Buka 06:00 - 23:00 WITA." data-img="https://source.unsplash.com/800x600/?restaurant,fine-dining">
                 <img src="https://source.unsplash.com/800x600/?restaurant,fine-dining" alt="Dining 1">
-                <div class="card-info">
-                    <h3>The Grand Restaurant</h3>
-                    <p>International Fine Dining.</p>
-                </div>
+                <div class="card-info"><h3>The Grand Restaurant</h3><p>International Fine Dining.</p></div>
             </div>
-            <div class="nav-item card" tabindex="0" onclick="openModal('Sunset Lounge & Bar', 'Bersantai dengan pilihan koktail eksklusif dan tapas ringan.', 'https://source.unsplash.com/800x600/?lounge,cocktail')">
+            <div class="nav-item card" tabindex="0" data-action="modal" data-title="Sunset Lounge" data-desc="Koktail eksklusif dan tapas ringan." data-img="https://source.unsplash.com/800x600/?lounge,cocktail">
                 <img src="https://source.unsplash.com/800x600/?lounge,cocktail" alt="Dining 2">
-                <div class="card-info">
-                    <h3>Sunset Lounge & Bar</h3>
-                    <p>Premium Cocktails & Tapas.</p>
-                </div>
+                <div class="card-info"><h3>Sunset Lounge & Bar</h3><p>Premium Cocktails & Tapas.</p></div>
             </div>
         </div>
     </div>
 
     <div id="detail-modal" class="view-section">
         <div class="modal-body">
-            <div class="modal-img-container"><img id="m-img" src="" alt="Detail Image"></div>
+            <div class="modal-img-container"><img id="m-img" src="" alt="Detail"></div>
             <div class="modal-text">
-                <h2 id="m-title">Title</h2>
-                <p id="m-desc">Description</p>
-                <div class="nav-item btn-close-modal" tabindex="0" onclick="closeModal()">Tutup (OK/Back)</div>
+                <h2 id="m-title">Title</h2><p id="m-desc">Description</p>
+                <div class="nav-item btn-close-modal" tabindex="0" data-action="closeModal">Tutup (OK/Back)</div>
             </div>
         </div>
     </div>
@@ -239,47 +172,36 @@
         // ==========================================
         // 1. ENGINE PELUNCUR SMART APP (WEBOS & PCD)
         // ==========================================
-        function launchSmartApp(appId) {
-            console.log("Mencoba membuka SmartApp: " + appId);
-            
-            // Taktik 1: API Native WebOS Luna Service (Paling sering berhasil di TV LG)
+        function launchSmartApp(appId, appName) {
+            // Tampilkan Toast Notifikasi
+            const toast = document.getElementById('toast');
+            toast.innerText = "🚀 Membuka " + appName + "...";
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+
+            console.log("Mengeksekusi perintah buka aplikasi: " + appId);
+
+            // Lapisan 1: Native Luna API (Sangat Handal di WebOS)
             try {
                 if (typeof window.webOS !== 'undefined' && window.webOS.service) {
                     window.webOS.service.request('luna://com.webos.applicationManager', {
-                        method: 'launch',
-                        parameters: { id: appId },
-                        onSuccess: function() { console.log("Berhasil buka via Luna"); },
-                        onFailure: function() { console.log("Gagal via Luna"); }
+                        method: 'launch', parameters: { id: appId }
                     });
                 }
-            } catch(e) {}
+            } catch(e) { console.log(e); }
 
-            // Taktik 2: API HCAP Pro:Centric Native
-            try {
-                if (typeof hcap !== 'undefined' && hcap.application) {
-                    hcap.application.launch({ id: appId });
-                }
-            } catch(e) {}
+            // Lapisan 2: ProcentralJS (Injeksi Server Pro:Centric)
+            try { if (typeof window.ProcentralJS !== 'undefined') window.ProcentralJS.launchApp(appId); } catch(e) {}
 
-            // Taktik 3: ProcentralJS Bridge (Bawaan PCD v5 ke atas)
-            try {
-                if (typeof window.ProcentralJS !== 'undefined') {
-                    window.ProcentralJS.launchApp(appId);
-                }
-            } catch(e) {}
+            // Lapisan 3: HCAP Pro:Centric
+            try { if (typeof hcap !== 'undefined' && hcap.application) hcap.application.launch({ id: appId }); } catch(e) {}
 
-            // Taktik 4: Kirim Pesan ke Parent iframe (Jika widget dibungkus PCD)
-            try {
-                window.parent.postMessage({ type: 'launchApp', id: appId }, '*');
-                window.parent.postMessage({ action: 'launch', app_id: appId }, '*');
-            } catch(e) {}
+            // Lapisan 4: Kirim Pesan ke Induk Iframe (PCD Server 172.19.0.2)
+            try { window.parent.postMessage({ type: 'launchApp', id: appId }, '*'); } catch(e) {}
 
-            // Taktik 5: URI Scheme Fallback
-            try {
-                window.location.href = 'sssp://v2/apps/launch?appId=' + appId;
-            } catch(e) {}
+            // Lapisan 5: SSSP URI Fallback
+            try { window.location.href = 'sssp://v2/apps/launch?appId=' + appId; } catch(e) {}
         }
-
 
         // ==========================================
         // 2. LOGIKA NAVIGASI HALAMAN (SPA)
@@ -287,14 +209,11 @@
         let currentView = 'view-home';
 
         function openView(viewId) {
-            // Sembunyikan semua section
             document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            // Tampilkan yang dituju
             const target = document.getElementById(viewId);
             target.classList.add('active');
             currentView = viewId;
 
-            // Auto-focus elemen pertama di halaman baru
             setTimeout(() => {
                 const firstItem = target.querySelector('.nav-item');
                 if(firstItem) firstItem.focus();
@@ -305,18 +224,12 @@
             document.getElementById('m-title').innerText = title;
             document.getElementById('m-desc').innerText = desc;
             document.getElementById('m-img').src = img;
-            
             document.getElementById('detail-modal').classList.add('active');
-            
-            // Auto-focus tombol tutup
-            setTimeout(() => {
-                document.querySelector('.btn-close-modal').focus();
-            }, 100);
+            setTimeout(() => { document.querySelector('.btn-close-modal').focus(); }, 100);
         }
 
         function closeModal() {
             document.getElementById('detail-modal').classList.remove('active');
-            // Kembalikan fokus ke elemen pertama di view yang sedang aktif
             const activeView = document.getElementById(currentView);
             if(activeView) {
                 const firstItem = activeView.querySelector('.nav-item');
@@ -324,79 +237,119 @@
             }
         }
 
+        // ==========================================
+        // 3. ENGINE SPATIAL NAVIGATION
+        // ==========================================
+        function moveFocus(direction) {
+            const active = document.activeElement;
+            const focusables = Array.from(document.querySelectorAll('.view-section.active .nav-item'));
+
+            if (!active || !focusables.includes(active)) {
+                if (focusables.length > 0) focusables[0].focus();
+                return;
+            }
+
+            const rectA = active.getBoundingClientRect();
+            const centerA = { x: rectA.left + rectA.width / 2, y: rectA.top + rectA.height / 2 };
+
+            let closest = null; let minDistance = Infinity;
+
+            focusables.forEach(el => {
+                if (el === active) return;
+                const rectB = el.getBoundingClientRect();
+                const centerB = { x: rectB.left + rectB.width / 2, y: rectB.top + rectB.height / 2 };
+
+                let isValid = false;
+                if (direction === 'up' && centerB.y < centerA.y - 10) isValid = true;
+                if (direction === 'down' && centerB.y > centerA.y + 10) isValid = true;
+                if (direction === 'left' && centerB.x < centerA.x - 10) isValid = true;
+                if (direction === 'right' && centerB.x > centerA.x + 10) isValid = true;
+
+                if (isValid) {
+                    const distance = Math.sqrt(Math.pow(centerA.x - centerB.x, 2) + Math.pow(centerA.y - centerB.y, 2));
+                    if (distance < minDistance) { minDistance = distance; closest = el; }
+                }
+            });
+
+            if (closest) closest.focus();
+        }
 
         // ==========================================
-        // 3. PENGELOLAAN TOMBOL REMOTE (KEYBOARD)
+        // 4. PENANGKAP SINYAL REMOTE TV (MASTER CONTROLLER)
         // ==========================================
         document.addEventListener('keydown', function(e) {
             const isModalOpen = document.getElementById('detail-modal').classList.contains('active');
 
-            // Tangkap Tombol OK (13) -> Ubah jadi Klik
+            // --- TOMBOL OK (13) EKSEKUSI CERDAS ---
             if (e.keyCode === 13) {
-                if (document.activeElement && document.activeElement.classList.contains('nav-item')) {
-                    document.activeElement.click();
+                const activeEl = document.activeElement;
+                if (activeEl && activeEl.classList.contains('nav-item')) {
+                    
+                    // Cek aksi apa yang harus dilakukan elemen ini
+                    if (activeEl.hasAttribute('data-target')) {
+                        openView(activeEl.getAttribute('data-target'));
+                    } 
+                    else if (activeEl.getAttribute('data-action') === 'launch') {
+                        launchSmartApp(activeEl.getAttribute('data-app'), activeEl.getAttribute('data-name'));
+                    } 
+                    else if (activeEl.getAttribute('data-action') === 'modal') {
+                        openModal(
+                            activeEl.getAttribute('data-title'), 
+                            activeEl.getAttribute('data-desc'), 
+                            activeEl.getAttribute('data-img')
+                        );
+                    } 
+                    else if (activeEl.getAttribute('data-action') === 'closeModal') {
+                        closeModal();
+                    }
+                    else if (activeEl.hasAttribute('onclick')) {
+                        activeEl.click();
+                    }
                     e.preventDefault();
                 }
                 return;
             }
 
-            // Tangkap Tombol BACK (461 = LG Remote, 8 = Backspace, 27 = Escape)
+            // --- TOMBOL BACK (461 = LG, 8 = Backspace, 27 = Escape) ---
             if (e.keyCode === 461 || e.keyCode === 8 || e.keyCode === 27) {
-                if (isModalOpen) {
-                    closeModal();
-                    e.preventDefault();
-                } 
-                else if (currentView !== 'view-home') {
-                    openView('view-home');
-                    e.preventDefault();
-                }
-                // Jika di view-home, biarkan TV yang handle (keluar widget)
+                if (isModalOpen) { closeModal(); e.preventDefault(); } 
+                else if (currentView !== 'view-home') { openView('view-home'); e.preventDefault(); }
                 return;
             }
 
-            // (Opsional) Jika TV Anda tidak otomatis memindahkan fokus saat panah ditekan,
-            // TV berbasis WebOS biasanya SUDAH OTOMATIS memindahkan fokus antar elemen tabindex="0".
-            // Jika macet, Anda bisa mengaktifkan Spatial Navigation JS library disini nantinya.
+            // --- TOMBOL PANAH NAVIGASI ---
+            switch(e.keyCode) {
+                case 38: moveFocus('up'); e.preventDefault(); break;
+                case 40: moveFocus('down'); e.preventDefault(); break;
+                case 37: moveFocus('left'); e.preventDefault(); break;
+                case 39: moveFocus('right'); e.preventDefault(); break;
+            }
         });
 
-
         // ==========================================
-        // 4. EFEK VISUAL BACKGROUND
+        // 5. ANIMASI BACKGROUND
         // ==========================================
-        // Slider
-        const slides = document.querySelectorAll('.slide');
-        let currentSlide = 0;
-        setInterval(() => {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }, 6000);
+        const slides = document.querySelectorAll('.slide'); let currentSlide = 0;
+        setInterval(() => { slides[currentSlide].classList.remove('active'); currentSlide = (currentSlide + 1) % slides.length; slides[currentSlide].classList.add('active'); }, 6000);
 
-        // Gold Dust
-        const canvas = document.getElementById('gold-dust');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.getElementById('gold-dust'); const ctx = canvas.getContext('2d');
         canvas.width = 1280; canvas.height = 720;
-        const particles = Array.from({length: 60}, () => ({
-            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-            size: Math.random() * 2 + 0.5, speedY: Math.random() * -0.5 - 0.2,
-            opacity: Math.random() * 0.5 + 0.2, angle: Math.random() * Math.PI * 2, spin: Math.random() * 0.02 - 0.01
+        const particles = Array.from({length: 50}, () => ({
+            x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 2 + 0.5, speedY: Math.random() * -0.5 - 0.2, opacity: Math.random() * 0.5 + 0.2, angle: Math.random() * Math.PI * 2, spin: Math.random() * 0.02 - 0.01
         }));
         function draw() {
             ctx.clearRect(0,0, canvas.width, canvas.height);
             particles.forEach(p => {
                 p.y += p.speedY; p.angle += p.spin; p.x += Math.sin(p.angle) * 0.5;
                 if(p.y < 0) { p.y = canvas.height; p.x = Math.random() * canvas.width; }
-                ctx.fillStyle = `rgba(212, 175, 55, ${p.opacity})`;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = `rgba(212, 175, 55, ${p.opacity})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
             });
             requestAnimationFrame(draw);
         }
         draw();
 
-        // Fokus awal saat TV menyala
-        window.onload = () => {
-            setTimeout(() => { document.querySelector('.menu-btn').focus(); }, 500);
-        };
+        window.onload = () => { setTimeout(() => { document.querySelector('.menu-btn').focus(); }, 500); };
+        document.addEventListener('click', () => window.focus());
     </script>
 </body>
 </html>
