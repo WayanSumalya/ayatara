@@ -544,52 +544,52 @@
   </div>
   <div class="ent-body">
 
-    <div class="app-card youtube" tabindex="0" onclick="launchApp('youtube.leanback.v4','YouTube')">
+    <div class="app-card youtube" tabindex="0" onclick="launchApp('YouTube','YouTube')">
       <div class="app-icon">▶️</div>
       <div class="app-name">YouTube</div>
       <div class="app-hint">Video & Musik</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card netflix" tabindex="0" onclick="launchApp('netflix','Netflix')">
+    <div class="app-card netflix" tabindex="0" onclick="launchApp('Netflix','Netflix')">
       <div class="app-icon">🎭</div>
       <div class="app-name">Netflix</div>
       <div class="app-hint">Film & Series</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card prime" tabindex="0" onclick="launchApp('amazon','Prime Video')">
-      <div class="app-icon">🎞️</div>
-      <div class="app-name">Prime Video</div>
-      <div class="app-hint">Amazon Originals</div>
+    <div class="app-card prime" tabindex="0" onclick="launchApp('HBO Max','HBO Max')">
+      <div class="app-icon">🎩</div>
+      <div class="app-name">HBO Max</div>
+      <div class="app-hint">Premium Originals</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card disney" tabindex="0" onclick="launchApp('disney','Disney+')">
-      <div class="app-icon">🏰</div>
-      <div class="app-name">Disney+</div>
-      <div class="app-hint">Marvel · Star Wars</div>
+    <div class="app-card disney" tabindex="0" onclick="launchApp('Pluto TV','Pluto TV')">
+      <div class="app-icon">📡</div>
+      <div class="app-name">Pluto TV</div>
+      <div class="app-hint">100s of Channels</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card spotify" tabindex="0" onclick="launchApp('spotify-beehive','Spotify')">
+    <div class="app-card spotify" tabindex="0" onclick="launchApp('Pandora','Pandora')">
       <div class="app-icon">🎵</div>
-      <div class="app-name">Spotify</div>
-      <div class="app-hint">Musik & Podcast</div>
+      <div class="app-name">Pandora</div>
+      <div class="app-hint">Musik & Radio</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card tv" tabindex="0" onclick="launchApp('com.webos.app.livetv','Live TV')">
-      <div class="app-icon">📺</div>
-      <div class="app-name">Live TV</div>
-      <div class="app-hint">100+ Saluran</div>
+    <div class="app-card tv" tabindex="0" onclick="launchApp('Browser','Browser')">
+      <div class="app-icon">🌐</div>
+      <div class="app-name">Browser</div>
+      <div class="app-hint">Internet di TV</div>
       <div class="open-pill">Buka</div>
     </div>
 
-    <div class="app-card mirror" tabindex="0" onclick="launchApp('com.webos.app.miracast','Screen Share')">
+    <div class="app-card mirror" tabindex="0" onclick="launchApp('Miracast','Miracast / Screen Share')">
       <div class="app-icon">📡</div>
-      <div class="app-name">Screen Share</div>
-      <div class="app-hint">Cast / Mirror</div>
+      <div class="app-name">Miracast</div>
+      <div class="app-hint">Screen Share</div>
       <div class="open-pill">Buka</div>
     </div>
 
@@ -906,23 +906,36 @@ function tick() {
 tick(); setInterval(tick, 15000);
 
 // ── APP LAUNCH ──
-function launchApp(appId, label) {
+// Menggunakan ProcentralJS.launchSmartApp() — sama persis dengan
+// Click Action "Launch SmartApp" di Procentric Editor (gambar 2).
+// SmartApp Id HARUS sama persis dengan nama di PCS Smart Apps list (gambar 1).
+var SMART_APPS = {
+  'youtube':     'YouTube',        // ganti jika nama berbeda di PCS Anda
+  'netflix':     'Netflix',
+  'hbo':         'HBO Max',
+  'miracast':    'Miracast',
+  'smartshare':  'SmartShare',
+  'browser':     'Browser',
+  'mobile':      'Mobile Connector',
+  'livetv':      'Live TV'
+};
+
+function launchApp(smartAppId, label) {
   showToast('🚀 Membuka ' + label + '…');
-  if (window.ProcentralJS && typeof window.ProcentralJS.launchApp === 'function') {
-    try { window.ProcentralJS.launchApp(appId); return; } catch(e) {}
+  // Cara BENAR di Procentric Direct v5:
+  if (window.ProcentralJS) {
+    // coba launchSmartApp dulu (Procentric v5 API)
+    if (typeof window.ProcentralJS.launchSmartApp === 'function') {
+      try { window.ProcentralJS.launchSmartApp(smartAppId); return; } catch(e) { console.log('launchSmartApp err:', e); }
+    }
+    // fallback: beberapa firmware pakai nama launchApp
+    if (typeof window.ProcentralJS.launchApp === 'function') {
+      try { window.ProcentralJS.launchApp(smartAppId); return; } catch(e) { console.log('launchApp err:', e); }
+    }
   }
-  if (window.webOS && window.webOS.service) {
-    try {
-      window.webOS.service.request('luna://com.webos.applicationManager', {
-        method: 'launch',
-        parameters: { id: appId },
-        onSuccess: function() {},
-        onFailure: function() { window.location.href = 'sssp://v2/apps/launch?appId=' + appId; }
-      });
-      return;
-    } catch(e) {}
-  }
-  window.location.href = 'sssp://v2/apps/launch?appId=' + appId;
+  // Fallback jika ProcentralJS belum siap (debug di browser biasa)
+  showToast('⚠️ ProcentralJS tidak ditemukan. Pastikan portal dibuka dari TV.');
+  console.warn('ProcentralJS tidak tersedia. SmartApp Id yang dicoba:', smartAppId);
 }
 
 // ── PANELS ──
