@@ -218,6 +218,58 @@
   }
   .nav-btn:hover .btn-arrow { opacity:1; transform:translateX(0); }
 
+  /* ══════════════════════════════════════
+     REMOTE CONTROL FOCUS STYLES
+     Semua elemen fokus harus terlihat jelas di layar TV 55"
+  ══════════════════════════════════════ */
+  :focus { outline: none; }
+
+  .nav-btn:focus, .nav-btn.tv-focus {
+    border-color: var(--gold) !important;
+    background: rgba(200,168,75,0.18) !important;
+    transform: translateX(-6px) !important;
+    box-shadow: 0 0 0 3px rgba(200,168,75,0.55), 4px 0 32px rgba(200,168,75,0.25) !important;
+  }
+  .nav-btn:focus .btn-label, .nav-btn.tv-focus .btn-label { color: var(--gold2) !important; }
+  .nav-btn:focus .btn-arrow, .nav-btn.tv-focus .btn-arrow { opacity:1 !important; transform:translateX(0) !important; }
+  .nav-btn:focus::before, .nav-btn.tv-focus::before { opacity:1 !important; }
+
+  .app-card:focus, .app-card.tv-focus {
+    transform: translateY(-10px) scale(1.05) !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(200,168,75,0.65), 0 28px 60px rgba(0,0,0,0.7) !important;
+  }
+  .app-card:focus .open-pill, .app-card.tv-focus .open-pill {
+    opacity:1 !important; transform: translateX(-50%) translateY(0) !important;
+  }
+  .app-card:focus::before, .app-card.tv-focus::before { opacity:1 !important; }
+
+  .back-btn:focus, .back-btn.tv-focus {
+    border-color: var(--gold) !important; color: var(--gold) !important;
+    box-shadow: 0 0 0 3px rgba(200,168,75,0.45) !important;
+    background: rgba(200,168,75,0.1) !important;
+  }
+
+  .dining-card:focus, .dining-card.tv-focus,
+  .well-card:focus, .well-card.tv-focus,
+  .accomm-card:focus, .accomm-card.tv-focus {
+    border-color: var(--gold) !important;
+    transform: translateY(-6px) !important;
+    box-shadow: 0 0 0 3px rgba(200,168,75,0.5), 0 20px 40px rgba(0,0,0,0.5) !important;
+  }
+
+  .modal-close:focus, .modal-close.tv-focus {
+    box-shadow: 0 0 0 4px rgba(200,168,75,0.7) !important;
+    transform: scale(1.05) !important;
+  }
+
+  #remote-hint {
+    position:fixed; bottom:20px; right:30px; z-index:999;
+    font-size:11px; color:rgba(200,168,75,0.35);
+    letter-spacing:.08em; text-align:right; line-height:1.9;
+    pointer-events:none;
+  }
+
   /* ── ENTERTAINMENT SUB-PANEL ── */
   #ent-panel {
     position:fixed; inset:0; z-index:30;
@@ -442,27 +494,27 @@
 
   <!-- RIGHT — Navigation -->
   <div id="right-panel">
-    <div class="nav-btn active" onclick="openEnt()">
+    <div class="nav-btn active" tabindex="0" onclick="openEnt()">
       <div class="btn-icon">🎬</div>
       <div class="btn-label">Entertainment</div>
       <div class="btn-arrow">›</div>
     </div>
-    <div class="nav-btn" onclick="openPanel('dining')">
+    <div class="nav-btn" tabindex="0" onclick="openPanel('dining')">
       <div class="btn-icon">🍽️</div>
       <div class="btn-label">Culinary & Dining</div>
       <div class="btn-arrow">›</div>
     </div>
-    <div class="nav-btn" onclick="openPanel('spa')">
+    <div class="nav-btn" tabindex="0" onclick="openPanel('spa')">
       <div class="btn-icon">🧖</div>
       <div class="btn-label">Spa & Wellness</div>
       <div class="btn-arrow">›</div>
     </div>
-    <div class="nav-btn" onclick="openPanel('accomm')">
+    <div class="nav-btn" tabindex="0" onclick="openPanel('accomm')">
       <div class="btn-icon">🛏️</div>
       <div class="btn-label">Accommodations</div>
       <div class="btn-arrow">›</div>
     </div>
-    <div class="nav-btn" onclick="openPanel('info')">
+    <div class="nav-btn" tabindex="0" onclick="openPanel('info')">
       <div class="btn-icon">🏨</div>
       <div class="btn-label">Hotel Info</div>
       <div class="btn-arrow">›</div>
@@ -488,53 +540,53 @@
         <p>Pilih aplikasi — akan terbuka langsung di TV Anda</p>
       </div>
     </div>
-    <button class="back-btn" onclick="closeEnt()">← Kembali</button>
+    <button class="back-btn" tabindex="0" onclick="closeEnt()">← Kembali</button>
   </div>
   <div class="ent-body">
 
-    <div class="app-card youtube" onclick="launchApp('youtube.leanback.v4','YouTube')">
+    <div class="app-card youtube" tabindex="0" onclick="launchApp('youtube.leanback.v4','YouTube')">
       <div class="app-icon">▶️</div>
       <div class="app-name">YouTube</div>
       <div class="app-hint">Video & Musik</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card netflix" onclick="launchApp('netflix','Netflix')">
+    <div class="app-card netflix" tabindex="0" onclick="launchApp('netflix','Netflix')">
       <div class="app-icon">🎭</div>
       <div class="app-name">Netflix</div>
       <div class="app-hint">Film & Series</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card prime" onclick="launchApp('amazon','Prime Video')">
+    <div class="app-card prime" tabindex="0" onclick="launchApp('amazon','Prime Video')">
       <div class="app-icon">🎞️</div>
       <div class="app-name">Prime Video</div>
       <div class="app-hint">Amazon Originals</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card disney" onclick="launchApp('disney','Disney+')">
+    <div class="app-card disney" tabindex="0" onclick="launchApp('disney','Disney+')">
       <div class="app-icon">🏰</div>
       <div class="app-name">Disney+</div>
       <div class="app-hint">Marvel · Star Wars</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card spotify" onclick="launchApp('spotify-beehive','Spotify')">
+    <div class="app-card spotify" tabindex="0" onclick="launchApp('spotify-beehive','Spotify')">
       <div class="app-icon">🎵</div>
       <div class="app-name">Spotify</div>
       <div class="app-hint">Musik & Podcast</div>
       <div class="open-pill">Buka App</div>
     </div>
 
-    <div class="app-card tv" onclick="launchApp('com.webos.app.livetv','Live TV')">
+    <div class="app-card tv" tabindex="0" onclick="launchApp('com.webos.app.livetv','Live TV')">
       <div class="app-icon">📺</div>
       <div class="app-name">Live TV</div>
       <div class="app-hint">100+ Saluran</div>
       <div class="open-pill">Buka</div>
     </div>
 
-    <div class="app-card mirror" onclick="launchApp('com.webos.app.miracast','Screen Share')">
+    <div class="app-card mirror" tabindex="0" onclick="launchApp('com.webos.app.miracast','Screen Share')">
       <div class="app-icon">📡</div>
       <div class="app-name">Screen Share</div>
       <div class="app-hint">Cast / Mirror</div>
@@ -553,7 +605,7 @@
       <h2>Culinary & Dining</h2>
       <p>Pengalaman kuliner dunia di Ayatara Resort</p>
     </div>
-    <button class="back-btn" onclick="closePanel('dining')">← Kembali</button>
+    <button class="back-btn" tabindex="0" onclick="closePanel('dining')">← Kembali</button>
   </div>
   <div class="sub-body">
     <div class="dining-grid">
@@ -585,7 +637,7 @@
       <h2>Spa & Wellness</h2>
       <p>Pemulihan jiwa dan raga di tengah alam</p>
     </div>
-    <button class="back-btn" onclick="closePanel('spa')">← Kembali</button>
+    <button class="back-btn" tabindex="0" onclick="closePanel('spa')">← Kembali</button>
   </div>
   <div class="sub-body">
     <div class="well-grid">
@@ -610,7 +662,7 @@
       <h2>Accommodations</h2>
       <p>Vila dan kamar mewah dengan keindahan alam Bali</p>
     </div>
-    <button class="back-btn" onclick="closePanel('accomm')">← Kembali</button>
+    <button class="back-btn" tabindex="0" onclick="closePanel('accomm')">← Kembali</button>
   </div>
   <div class="sub-body">
     <div class="accomm-grid">
@@ -633,7 +685,7 @@
       <h2>Hotel Info</h2>
       <p>Informasi penting selama menginap di Ayatara Resort</p>
     </div>
-    <button class="back-btn" onclick="closePanel('info')">← Kembali</button>
+    <button class="back-btn" tabindex="0" onclick="closePanel('info')">← Kembali</button>
   </div>
   <div class="sub-body">
     <div class="info-grid">
@@ -658,11 +710,188 @@
   <div id="modal" onclick="event.stopPropagation()">
     <h2 id="modal-title"></h2>
     <p id="modal-body"></p>
-    <button class="modal-close" onclick="closeModal()">Tutup</button>
+    <button class="modal-close" tabindex="0" onclick="closeModal()">Tutup</button>
   </div>
 </div>
 
+<!-- REMOTE HINT -->
+<div id="remote-hint">
+  ▲▼◄► Navigasi &nbsp;|&nbsp; OK Pilih &nbsp;|&nbsp; BACK Kembali
+</div>
+
 <script>
+// ═══════════════════════════════════════════════════════
+//  REMOTE CONTROL NAVIGATION ENGINE
+//  Handles: Arrow keys, Enter (OK), Backspace (Back button)
+// ═══════════════════════════════════════════════════════
+
+// Semua elemen yang bisa difokus — query ulang setiap kali panel berubah
+function getFocusables(scope) {
+  const root = scope || document;
+  // Hanya ambil elemen dalam panel yang sedang aktif/visible
+  return Array.from(root.querySelectorAll(
+    '[tabindex="0"]:not([disabled])'
+  )).filter(el => {
+    // Pastikan elemen visible (tidak di dalam panel yang tersembunyi)
+    const panel = el.closest('.sub-panel, #ent-panel, #modal-overlay');
+    if (panel) {
+      return panel.classList.contains('open');
+    }
+    // Elemen di home screen — hanya terlihat jika tidak ada panel terbuka
+    const anyOpen = document.querySelector('.sub-panel.open, #ent-panel.open');
+    return !anyOpen;
+  });
+}
+
+// State fokus saat ini
+let currentFocus = null;
+
+function setFocus(el) {
+  if (!el) return;
+  // Hapus fokus lama
+  if (currentFocus) {
+    currentFocus.classList.remove('tv-focus');
+  }
+  currentFocus = el;
+  el.classList.add('tv-focus');
+  el.focus({ preventScroll: false });
+  // Scroll agar elemen terlihat
+  el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function initFocus() {
+  // Tunggu panel benar-benar terbuka dulu
+  setTimeout(() => {
+    const items = getFocusables();
+    if (items.length > 0) setFocus(items[0]);
+  }, 50);
+}
+
+// Cari elemen paling dekat ke arah tertentu (spatial navigation)
+function getNearest(current, direction) {
+  const items = getFocusables();
+  if (items.length === 0) return null;
+
+  const cr = current.getBoundingClientRect();
+  const cx = cr.left + cr.width / 2;
+  const cy = cr.top + cr.height / 2;
+
+  let best = null;
+  let bestScore = Infinity;
+
+  items.forEach(el => {
+    if (el === current) return;
+    const r = el.getBoundingClientRect();
+    const ex = r.left + r.width / 2;
+    const ey = r.top + r.height / 2;
+    const dx = ex - cx;
+    const dy = ey - cy;
+
+    // Filter berdasarkan arah
+    let inDirection = false;
+    let primary = 0;
+    let secondary = 0;
+
+    if (direction === 'up'    && dy < -10) { inDirection=true; primary=-dy; secondary=Math.abs(dx); }
+    if (direction === 'down'  && dy >  10) { inDirection=true; primary= dy; secondary=Math.abs(dx); }
+    if (direction === 'left'  && dx < -10) { inDirection=true; primary=-dx; secondary=Math.abs(dy); }
+    if (direction === 'right' && dx >  10) { inDirection=true; primary= dx; secondary=Math.abs(dy); }
+
+    if (!inDirection) return;
+
+    // Score: utamakan elemen di arah yang tepat, penalti untuk melenceng ke samping
+    const score = primary + secondary * 2.5;
+    if (score < bestScore) {
+      bestScore = score;
+      best = el;
+    }
+  });
+
+  return best;
+}
+
+// ── KEYBOARD / REMOTE EVENT ──
+document.addEventListener('keydown', function(e) {
+  const key = e.key;
+
+  // Pastikan ada fokus aktif
+  if (!currentFocus || !document.contains(currentFocus)) {
+    initFocus();
+    return;
+  }
+
+  switch(key) {
+    case 'ArrowUp':
+    case 'Up':
+      e.preventDefault();
+      var next = getNearest(currentFocus, 'up');
+      if (next) setFocus(next);
+      break;
+
+    case 'ArrowDown':
+    case 'Down':
+      e.preventDefault();
+      var next = getNearest(currentFocus, 'down');
+      if (next) setFocus(next);
+      break;
+
+    case 'ArrowLeft':
+    case 'Left':
+      e.preventDefault();
+      var next = getNearest(currentFocus, 'left');
+      if (next) setFocus(next);
+      break;
+
+    case 'ArrowRight':
+    case 'Right':
+      e.preventDefault();
+      var next = getNearest(currentFocus, 'right');
+      if (next) setFocus(next);
+      break;
+
+    case 'Enter':
+    case ' ':
+      e.preventDefault();
+      if (currentFocus) currentFocus.click();
+      // Re-init fokus setelah klik (panel mungkin berubah)
+      setTimeout(initFocus, 80);
+      break;
+
+    case 'Backspace':
+    case 'Back':
+    case 'GoBack':
+    case 'XF86Back':
+      e.preventDefault();
+      handleBack();
+      break;
+  }
+});
+
+// Tangkap tombol Back remote LG (bisa keyCode 8 atau 461)
+document.addEventListener('keydown', function(e) {
+  if (e.keyCode === 461 || e.keyCode === 10009) { // LG Back key codes
+    e.preventDefault();
+    handleBack();
+  }
+});
+
+function handleBack() {
+  // Cek modal dulu
+  if (document.getElementById('modal-overlay').classList.contains('open')) {
+    closeModal(); setTimeout(initFocus, 80); return;
+  }
+  // Cek panel entertainment
+  if (document.getElementById('ent-panel').classList.contains('open')) {
+    closeEnt(); setTimeout(initFocus, 80); return;
+  }
+  // Cek sub-panels lain
+  const openPanel = document.querySelector('.sub-panel.open');
+  if (openPanel) {
+    openPanel.classList.remove('open'); setTimeout(initFocus, 80); return;
+  }
+  // Di home screen — tidak ada yang perlu ditutup
+}
+
 // ── CLOCK ──
 function tick() {
   const d = new Date();
@@ -679,11 +908,9 @@ tick(); setInterval(tick, 15000);
 // ── APP LAUNCH ──
 function launchApp(appId, label) {
   showToast('🚀 Membuka ' + label + '…');
-  // Method 1: ProcentralJS (injected by LG PCS server)
   if (window.ProcentralJS && typeof window.ProcentralJS.launchApp === 'function') {
     try { window.ProcentralJS.launchApp(appId); return; } catch(e) {}
   }
-  // Method 2: webOS service
   if (window.webOS && window.webOS.service) {
     try {
       window.webOS.service.request('luna://com.webos.applicationManager', {
@@ -695,22 +922,25 @@ function launchApp(appId, label) {
       return;
     } catch(e) {}
   }
-  // Method 3: sssp:// URI fallback
   window.location.href = 'sssp://v2/apps/launch?appId=' + appId;
 }
 
 // ── PANELS ──
 function openEnt() {
   document.getElementById('ent-panel').classList.add('open');
+  setTimeout(initFocus, 80);
 }
 function closeEnt() {
   document.getElementById('ent-panel').classList.remove('open');
+  setTimeout(initFocus, 80);
 }
 function openPanel(id) {
   document.getElementById('panel-' + id).classList.add('open');
+  setTimeout(initFocus, 80);
 }
 function closePanel(id) {
   document.getElementById('panel-' + id).classList.remove('open');
+  setTimeout(initFocus, 80);
 }
 
 // ── TOAST ──
@@ -727,10 +957,17 @@ function openModal(title, body) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').textContent = body;
   document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(initFocus, 80);
 }
 function closeModal() {
   document.getElementById('modal-overlay').classList.remove('open');
+  setTimeout(initFocus, 80);
 }
+
+// ── INIT ── fokus pertama saat halaman load
+window.addEventListener('load', function() {
+  setTimeout(initFocus, 300);
+});
 </script>
 </body>
 </html>
