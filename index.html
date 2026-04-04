@@ -12,7 +12,7 @@
         * { box-sizing: border-box; }
         body, html { 
             margin: 0; padding: 0; 
-            width: 1920px; height: 1080px; /* Ukuran pasti panel FHD */
+            width: 1920px; height: 1080px; 
             overflow: hidden; 
             background-color: #000; 
         }
@@ -21,26 +21,31 @@
         .slider { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; z-index: -1; }
         .slide { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            opacity: 0; transition: opacity 2.5s ease-in-out; /* Transisi sangat lambat & mewah */
+            opacity: 0; transition: opacity 2.5s ease-in-out; 
             background-size: cover; background-position: center; 
         }
         .slide.active { opacity: 1; }
         
-        /* Gradient Overlay agar teks putih selalu terbaca di gambar terang/gelap */
         .overlay { 
             position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 100%);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.7) 100%);
             z-index: 0; 
+        }
+
+        /* CANVAS UNTUK EFEK DEBU EMAS */
+        #goldDust {
+            position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
+            z-index: 1; /* Di atas overlay gelap, di bawah teks */
+            pointer-events: none; /* Agar tidak mengganggu klik/remote */
         }
 
         /* 2. HEADER: LOGO & JAM */
         .header { 
-            position: absolute; top: 70px; left: 90px; width: 1740px; /* 1920 - (90*2) */
+            position: absolute; top: 70px; left: 90px; width: 1740px; 
             display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; 
         }
         .logo img { width: 300px; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)); }
         
-        /* Container Jam dan Cuaca */
         .clock-weather-container { 
             display: flex; align-items: center; gap: 20px; 
             color: #fff; text-shadow: 2px 2px 6px rgba(0,0,0,0.8); 
@@ -51,42 +56,56 @@
         #time { font-size: 72px; font-weight: 300; line-height: 1; margin-bottom: 5px; }
         #date { font-size: 22px; font-weight: 400; letter-spacing: 3px; text-transform: uppercase; color: #f0f0f0; }
 
-        /* 3. KONTEN TEKS TENGAH */
+        /* 3. KONTEN TEKS TENGAH DENGAN ANIMASI */
         .content-box { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             width: 1300px; text-align: center; color: #fff; z-index: 5;
             font-family: 'Playfair Display', serif;
         }
         
+        /* Keyframes untuk Animasi Fade In & Slide Up */
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(40px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
         .content-box h1 { 
             font-size: 46px; letter-spacing: 6px; margin-bottom: 30px; 
-            color: #d4af37; /* Ayatara Gold */
+            color: #d4af37; 
             text-transform: uppercase;
             text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+            /* Memanggil animasi */
+            opacity: 0; 
+            animation: fadeInUp 1.5s ease-out 0.5s forwards; 
         }
         
         .content-box p { 
             font-size: 34px; line-height: 1.8; font-style: italic; font-weight: 400; 
             text-shadow: 2px 2px 8px rgba(0,0,0,1); 
+            /* Memanggil animasi dengan jeda agar muncul setelah H1 */
+            opacity: 0;
+            animation: fadeInUp 1.5s ease-out 1.2s forwards;
         }
     </style>
 </head>
 <body>
 
     <div class="slider">
-        <div class="slide active" style="background-image: url('assets/1.jpg');"></div>
-        <div class="slide" style="background-image: url('assets/2.jpg');"></div>
-        <div class="slide" style="background-image: url('assets/3.jpg');"></div>
-        <div class="slide" style="background-image: url('assets/4.jpg');"></div>
-        <div class="slide" style="background-image: url('assets/5.jpg');"></div>
+        <div class="slide active" style="background-image: url('asset/1.jpg');"></div>
+        <div class="slide" style="background-image: url('asset/2.jpg');"></div>
+        <div class="slide" style="background-image: url('asset/3.jpg');"></div>
     </div>
     <div class="overlay"></div>
 
+    <canvas id="goldDust"></canvas>
+
     <div class="header">
-     
+        <div class="logo">
+            <img src="asset/ayatara-logo-white.png" alt="Ayatara Resort">
+        </div>
         <div class="clock-weather-container">
             <div class="weather-icon">
-                <img src="assets/icon-weather.png" alt="Weather">
+                <img src="asset/icon-weather.png" alt="Weather">
             </div>
             <div class="time-container">
                 <div id="time">00:00</div>
@@ -113,27 +132,75 @@
             currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
         }
-        // Ganti gambar setiap 8 detik agar tidak terlalu cepat untuk baca teks
-        setInterval(nextSlide, 8000); 
+        setInterval(nextSlide, 8000); // Ganti tiap 8 detik
 
-        // 2. Script Jam Digital (Disesuaikan dengan Waktu TV/Lokal)
+        // 2. Script Efek Debu Emas (Gold Dust Particle System)
+        const canvas = document.getElementById('goldDust');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 1920;
+        canvas.height = 1080;
+        
+        let particlesArray = [];
+        
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5; // Ukuran debu bervariasi
+                this.speedX = Math.random() * 0.5 - 0.25; // Gerak melayang kiri-kanan
+                this.speedY = Math.random() * -1 - 0.5; // Gerak mengambang ke atas
+                // Warna emas ayatara dengan transparansi acak
+                this.color = `rgba(212, 175, 55, ${Math.random() * 0.6 + 0.1})`; 
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                // Jika partikel keluar dari atas layar, reset ke bawah
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function initDust() {
+            for (let i = 0; i < 150; i++) { // Jumlah partikel debu
+                particlesArray.push(new Particle());
+            }
+        }
+        
+        function animateDust() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+                particlesArray[i].draw();
+            }
+            requestAnimationFrame(animateDust);
+        }
+        
+        initDust();
+        animateDust();
+
+        // 3. Script Jam Digital
         function updateClock() {
             const now = new Date();
-            
-            // Format Jam & Menit
             let hours = now.getHours().toString().padStart(2, '0');
             let minutes = now.getMinutes().toString().padStart(2, '0');
             document.getElementById('time').textContent = `${hours}:${minutes}`;
             
-            // Format Tanggal (Contoh: SENIN, 01 JANUARI 2026)
             const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
             let dateString = now.toLocaleDateString('id-ID', options).toUpperCase();
             document.getElementById('date').textContent = dateString;
         }
         
-        // Update jam setiap detik
         setInterval(updateClock, 1000);
-        updateClock(); // Panggil sekali saat load
+        updateClock(); 
     </script>
 </body>
 </html>
