@@ -1,145 +1,247 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ayatara Resort - Home Portal</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayatara Resort Ubud - Luxury TV Display</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <style>
-        /* RESET & KUNCI RESOLUSI FHD */
-        * { box-sizing: border-box; }
-        body, html { 
-            margin: 0; padding: 0; 
-            width: 1920px; height: 1080px; 
-            overflow: hidden; 
-            background-color: #000; /* Dasar hitam jika gambar telat termuat */
-            font-family: 'Playfair Display', serif; /* Memaksa font serif */
+        /* Base Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        /* SLIDER BACKGROUND */
-        .slider { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; z-index: -1; background-color: #111; }
-        .slide { 
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            opacity: 0; transition: opacity 2.5s ease-in-out; 
-            background-size: cover; background-position: center; 
-        }
-        .slide.active { opacity: 1; }
-        
-        /* Overlay gradasi agar teks tetap terbaca */
-        .overlay { 
-            position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; 
-            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.8) 100%);
-            z-index: 0; 
+        /* Latar belakang wajib hitam murni untuk efek transisi */
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #050505; 
         }
 
-        /* CANVAS UNTUK EFEK DEBU EMAS */
-        #goldDust {
-            position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --------------------------------------
+           1. UNIFORM LUXURY BACKGROUND
+        --------------------------------------- */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            
+            /* Gerakan Murni Ke Tengah (Synchronized Central Zoom) */
+            transform: scale(1);
+            transform-origin: center center; 
+            
+            /* Color Grading: Golden Amber. 
+               Menyamakan tone semua foto agar seragam dan mewah */
+            filter: sepia(0.3) hue-rotate(-15deg) brightness(0.8) contrast(1.1); 
+            
+            /* Transisi sangat halus untuk TV */
+            transition: opacity 1.8s ease-in-out, transform 18s linear;
             z-index: 1;
+            will-change: opacity, transform, filter; 
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(1.12); /* Zoom lambat */
+            z-index: 2;
+        }
+
+        /* --------------------------------------
+           2. OVERLAYS & GOLD DUST
+        --------------------------------------- */
+        /* Vignette: Menggelapkan tepi layar agar teks di tengah bersinar */
+        .vignette-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(10,10,5,0.75) 100%);
+            z-index: 3;
+        }
+
+        /* Partikel Emas Mengambang (Inline SVG agar ringan di memori TV) */
+        .gold-dust-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Pattern partikel emas */
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIj48ZyBmaWxsPSIjRDhCMzU0IiBmaWxsLW9wYWNpdHk9IjAuNSI+PGNpcmNsZSBjeD0iMjUwIiBjeT0iMTMwIiByPSIxLjUiLz48Y2lyY2xlIGN4PSIxMDAiIGN5PSIzMDAiIHI9IjEiLz48Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MDAiIHI9IjIiLz48Y2lyY2xlIGN4PSI1MDAiIGN5PSIxMDAiIHI9IjEuNSIvPjxjaXJjbGUgY3g9IjcwMCIgY3k9IjMzMCIgcj0iMSIvPjxjaXJjbGUgY3g9IjYwMCIgY3k9IjUwMCIgcj0iMiIvPjxjaXJjbGUgY3g9IjMwMCIgY3k9IjI5MCIgcj0iMS41Ii8+PGNpcmNsZSBjeD0iODgwIiBjeT0iMzA4IiByPSIxIi8+PGNpcmNsZSBjeD0iOTkwIiBjeT0iMTMyIiByPSIyIi8+PGNpcmNsZSBjeD0iMTIxIiBjeT0iOTk5IiByPSIxLjUiLz48Y2lyY2xlIGN4PSI1MzIiIGN5PSI4MjgiIHI9IjEiLz48Y2lyY2xlIGN4PSI4NzAiIGN5PSI1NjQiIHI9IjIiLz48Y2lyY2xlIGN4PSIzNDMiIGN5PSIzMTgiIHI9IjEuNSIvPjxjaXJjbGUgY3g9IjE5OCIgY3k9IjgxNyIHI9IjEiLz48Y2lyY2xlIGN4PSI3MDQiIGN5PSIyMjgiIHI9IjIiLz48L2c+PC9zdmc+');
+            background-repeat: repeat;
+            opacity: 0.3;
+            z-index: 4;
+            /* Pergerakan diagonal lambat */
+            animation: slowFloatingGold 60s linear infinite;
+        }
+
+        @keyframes slowFloatingGold {
+            0% { background-position: 0px 0px; }
+            100% { background-position: 800px -600px; }
+        }
+
+        /* --------------------------------------
+           3. TYPOGRAPHY & ANIMATION
+        --------------------------------------- */
+        .text-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            text-align: center;
+            width: 90%;
+            max-width: 1200px;
             pointer-events: none; 
         }
 
-        /* KONTEN TEKS TENGAH DENGAN ANIMASI */
-        .content-box { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            width: 1300px; text-align: center; color: #fff; z-index: 5;
-        }
-        
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(40px); }
-            100% { opacity: 1; transform: translateY(0); }
+        /* Setup awal sebelum animasi jalan */
+        .text-content h1, 
+        .text-content h2, 
+        .text-content p,
+        .text-content .divider {
+            opacity: 0;
+            will-change: opacity, transform;
+            transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        .content-box h1 { 
-            font-size: 52px; letter-spacing: 8px; margin-bottom: 30px; 
-            color: #d4af37; /* Emas */
+        /* Judul: Metallic Gold Look */
+        .text-content h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(3rem, 5vw, 5.5rem);
+            font-weight: 700;
+            /* Warna Emas Mewah (Metallic Gold) */
+            color: #D4AF37; 
             text-transform: uppercase;
-            text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
-            opacity: 0; 
-            animation: fadeInUp 1.5s ease-out 0.5s forwards; 
+            letter-spacing: 4px; 
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0px 0px 40px rgba(212, 175, 55, 0.3);
+            
+            transform: translateY(30px);
+            transition: opacity 2.5s, transform 2.5s;
         }
-        
-        .content-box p { 
-            font-size: 38px; line-height: 1.6; font-style: italic; font-weight: 400; 
-            text-shadow: 2px 2px 10px rgba(0,0,0,1); 
-            opacity: 0;
-            animation: fadeInUp 1.5s ease-out 1.2s forwards;
+
+        /* Garis pemisah estetik */
+        .text-content .divider {
+            width: 80px;
+            height: 2px;
+            background-color: #D4AF37;
+            margin: 15px auto 25px auto;
+            box-shadow: 0px 0px 10px rgba(212, 175, 55, 0.5);
+            
+            transform: scaleX(0);
+            transition: opacity 2.5s 0.6s, transform 2.5s 0.6s;
         }
+
+        /* Subjudul */
+        .text-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+            font-style: italic;
+            font-weight: 400;
+            color: #F8F4E6; /* Putih sedikit hangat */
+            margin-bottom: 35px;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+            
+            transform: translateY(15px);
+            transition: opacity 2.5s 1.2s, transform 2.5s 1.2s;
+        }
+
+        /* Paragraf */
+        .text-content p {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(1.1rem, 1.5vw, 1.5rem);
+            line-height: 2;
+            font-weight: 300;
+            color: #E8E8E8;
+            max-width: 950px;
+            margin: 0 auto;
+            text-shadow: 2px 2px 5px rgba(0,0,0,1);
+            
+            transform: translateY(20px);
+            transition: opacity 2.5s 1.8s, transform 2.5s 1.8s;
+        }
+
+        /* Pemicu animasi saat halaman selesai diload (Mencegah patah-patah di awal) */
+        body.loaded .text-content h1,
+        body.loaded .text-content h2,
+        body.loaded .text-content p {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        body.loaded .text-content .divider {
+            opacity: 1;
+            transform: scaleX(1);
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="slider">
+    <div class="slider-container">
         <div class="slide active" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/1.jpg');"></div>
-    </div>
-    
-    <div class="overlay"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/2.jpg');"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/3.jpg');"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/4.jpg');"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/5.jpg');"></div>
+        
+        <div class="vignette-overlay"></div>
+        <div class="gold-dust-overlay"></div>
 
-    <canvas id="goldDust"></canvas>
-
-    <div class="content-box">
-        <h1>AYATARA RESORT UBUD</h1>
-        <p>Where love becomes a legacy. <br>
-        Ayatara was inspired by a timeless story of love, strength, and serenity. <br><br>
-        Its name reflects the spirit of resilience, gentle beauty, and quiet protection. <br>
-        A place where every detail is touched by meaning—creating a stay that is both peaceful and unforgettable.</p>
+        <div class="text-content">
+            <h1>AYATARA RESORT UBUD</h1>
+            <div class="divider"></div>
+            <h2>Where love becomes a legacy.</h2>
+            <p>
+                Ayatara was inspired by a timeless story of love, strength, and serenity. 
+                Its name reflects the spirit of resilience, gentle beauty, and quiet protection. 
+                A place where every detail is touched by meaning—creating a stay that is both peaceful and unforgettable.
+            </p>
+        </div>
     </div>
 
     <script>
-        // 1. Script Efek Debu Emas (Gold Dust Particle System)
-        const canvas = document.getElementById('goldDust');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 1920;
-        canvas.height = 1080;
+        // Memastikan animasi teks HANYA berjalan saat semua file beres dimuat
+        window.addEventListener('load', function() {
+            document.body.classList.add('loaded');
+        });
+
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
         
-        let particlesArray = [];
-        
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 3 + 0.5; // Ukuran debu
-                this.speedX = Math.random() * 0.5 - 0.25; 
-                this.speedY = Math.random() * -1.5 - 0.5; // Kecepatan melayang
-                this.color = `rgba(212, 175, 55, ${Math.random() * 0.8 + 0.2})`; // Warna emas
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                if (this.y < 0) {
-                    this.y = canvas.height;
-                    this.x = Math.random() * canvas.width;
-                }
-            }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
+        const slideDuration = 8000; // Tahan tiap gambar selama 8 detik
+        const blackScreenDelay = 1500; // Jeda layar hitam antar gambar untuk istirahat mata (1.5 detik)
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            
+            // Tunggu layar menggelap sempurna sebelum memuat gambar baru
+            setTimeout(() => {
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }, blackScreenDelay);
         }
-        
-        function initDust() {
-            for (let i = 0; i < 200; i++) { // Jumlah partikel
-                particlesArray.push(new Particle());
-            }
-        }
-        
-        function animateDust() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-                particlesArray[i].draw();
-            }
-            requestAnimationFrame(animateDust);
-        }
-        
-        initDust();
-        animateDust();
+
+        setInterval(nextSlide, slideDuration);
     </script>
+
 </body>
 </html>
