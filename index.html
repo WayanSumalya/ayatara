@@ -17,7 +17,7 @@
             background-color: #000; 
         }
 
-        /* 1. SLIDER BACKGROUND */
+        /* SLIDER BACKGROUND */
         .slider { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; z-index: -1; }
         .slide { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
@@ -33,14 +33,14 @@
             z-index: 0; 
         }
 
-        /* 2. CANVAS UNTUK EFEK DEBU EMAS */
+        /* CANVAS UNTUK EFEK DEBU EMAS */
         #goldDust {
             position: absolute; top: 0; left: 0; width: 1920px; height: 1080px;
             z-index: 1;
             pointer-events: none; 
         }
 
-        /* 3. KONTEN TEKS TENGAH DENGAN ANIMASI */
+        /* KONTEN TEKS TENGAH DENGAN ANIMASI */
         .content-box { 
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
             width: 1300px; text-align: center; color: #fff; z-index: 5;
@@ -72,11 +72,11 @@
 <body>
 
     <div class="slider">
-        <div class="slide active" style="background-image: url('https://github.com/WayanSumalya/ayatara/asset/1.jpg');"></div>
-        <div class="slide" style="background-image: url('https://github.com/WayanSumalya/ayatara/asset/2.jpg');"></div>
-        <div class="slide" style="background-image: url('https://github.com/WayanSumalya/ayatara/asset/3.jpg');"></div>
-        <div class="slide" style="background-image: url('https://github.com/WayanSumalya/ayatara/asset/4.jpg');"></div>
-        <div class="slide" style="background-image: url('https://github.com/WayanSumalya/ayatara/asset/5.jpg');"></div>
+        <div class="slide active" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/1.jpg');"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/2.jpg');"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/3.jpg');"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/4.jpg');"></div>
+        <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/5.jpg');"></div>
         </div>
     <div class="overlay"></div>
 
@@ -95,12 +95,15 @@
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
         
-        function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
+        // Cek jika slide lebih dari 1 agar animasi slider berjalan
+        if (slides.length > 1) {
+            function nextSlide() {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = (currentSlide + 1) % slides.length;
+                slides[currentSlide].classList.add('active');
+            }
+            setInterval(nextSlide, 8000); 
         }
-        setInterval(nextSlide, 8000); 
 
         // 2. Script Efek Debu Emas (Gold Dust Particle System)
         const canvas = document.getElementById('goldDust');
