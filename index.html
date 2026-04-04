@@ -1,49 +1,139 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ayatara Resort - Home Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+    
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Playfair Display', serif; }
-        
-        /* Slider Styles */
-        .slider-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-        .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; transition: opacity 1s ease-in-out; }
-        .slide.active { opacity: 1; }
-        .slide img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* Overlay & Text Styles */
-        .overlay { background: rgba(0,0,0,0.3); width: 100%; height: 100%; position: absolute; z-index: 0; }
-        .logo-container { position: absolute; top: 50px; left: 50px; width: 200px; z-index: 1; }
-        .luxe-clock-weather { position: absolute; top: 50px; right: 50px; display: flex; gap: 15px; z-index: 1; }
-        
-        .main-text-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 70%; text-align: center; color: #fff; background: rgba(0,0,0,0.5); padding: 30px; border: 1px solid #d4af37; border-radius: 10px; z-index: 1; }
-        .main-text-box p { font-size: 24px; line-height: 1.6; font-style: italic; }
+        /* RESET & KUNCI RESOLUSI FHD */
+        * { box-sizing: border-box; }
+        body, html { 
+            margin: 0; padding: 0; 
+            width: 1920px; height: 1080px; /* Ukuran pasti panel FHD */
+            overflow: hidden; 
+            background-color: #000; 
+        }
 
-        /* Slider Controls (Slightly stylized dots) */
-        .slider-controls { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; z-index: 1; }
-        .dot { width: 10px; height: 10px; border: 2px solid #fff; border-radius: 50%; cursor: pointer; transition: background 0.3s ease; }
-        .dot.active { background: #fff; }
+        /* 1. SLIDER BACKGROUND */
+        .slider { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; z-index: -1; }
+        .slide { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            opacity: 0; transition: opacity 2.5s ease-in-out; /* Transisi sangat lambat & mewah */
+            background-size: cover; background-position: center; 
+        }
+        .slide.active { opacity: 1; }
+        
+        /* Gradient Overlay agar teks putih selalu terbaca di gambar terang/gelap */
+        .overlay { 
+            position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; 
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.6) 100%);
+            z-index: 0; 
+        }
+
+        /* 2. HEADER: LOGO & JAM */
+        .header { 
+            position: absolute; top: 70px; left: 90px; width: 1740px; /* 1920 - (90*2) */
+            display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; 
+        }
+        .logo img { width: 300px; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)); }
+        
+        /* Container Jam dan Cuaca */
+        .clock-weather-container { 
+            display: flex; align-items: center; gap: 20px; 
+            color: #fff; text-shadow: 2px 2px 6px rgba(0,0,0,0.8); 
+            font-family: 'Lato', sans-serif;
+        }
+        .weather-icon img { width: 70px; height: auto; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5)); }
+        .time-container { text-align: right; }
+        #time { font-size: 72px; font-weight: 300; line-height: 1; margin-bottom: 5px; }
+        #date { font-size: 22px; font-weight: 400; letter-spacing: 3px; text-transform: uppercase; color: #f0f0f0; }
+
+        /* 3. KONTEN TEKS TENGAH */
+        .content-box { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 1300px; text-align: center; color: #fff; z-index: 5;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .content-box h1 { 
+            font-size: 46px; letter-spacing: 6px; margin-bottom: 30px; 
+            color: #d4af37; /* Ayatara Gold */
+            text-transform: uppercase;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
+        }
+        
+        .content-box p { 
+            font-size: 34px; line-height: 1.8; font-style: italic; font-weight: 400; 
+            text-shadow: 2px 2px 8px rgba(0,0,0,1); 
+        }
     </style>
 </head>
 <body>
-    <div class="slider-container">
-        </div>
+
+    <div class="slider">
+        <div class="slide active" style="background-image: url('assets/1.jpg');"></div>
+        <div class="slide" style="background-image: url('assets/2.jpg');"></div>
+        <div class="slide" style="background-image: url('assets/3.jpg');"></div>
+        <div class="slide" style="background-image: url('assets/4.jpg');"></div>
+        <div class="slide" style="background-image: url('assets/5.jpg');"></div>
+    </div>
     <div class="overlay"></div>
-    
-    <div class="logo-container">
-        <img src="assets/ayatara-logo-white.png" width="100%">
-    </div>
-    <div class="luxe-clock-weather">
+
+    <div class="header">
+     
+        <div class="clock-weather-container">
+            <div class="weather-icon">
+                <img src="assets/icon-weather.png" alt="Weather">
+            </div>
+            <div class="time-container">
+                <div id="time">00:00</div>
+                <div id="date">MEMUAT WAKTU...</div>
+            </div>
         </div>
-
-    <div class="main-text-box">
-        <p>AYATARA RESORT UBUD - Where love becomes a legacy.</p>
-        <p>Ayatara was inspired by a timeless story of love, strength, and serenity.</p>
-        <p>Its name reflects the spirit of resilience, gentle beauty, and quiet protection.</p>
-        <p>A place where every detail is touched by meaning—creating a stay that is both peaceful and unforgettable.</p>
     </div>
 
-    <div class="slider-controls">
-        </div>
+    <div class="content-box">
+        <h1>AYATARA RESORT UBUD</h1>
+        <p>Where love becomes a legacy. <br>
+        Ayatara was inspired by a timeless story of love, strength, and serenity. <br><br>
+        Its name reflects the spirit of resilience, gentle beauty, and quiet protection. <br>
+        A place where every detail is touched by meaning—creating a stay that is both peaceful and unforgettable.</p>
+    </div>
 
-    </body>
+    <script>
+        // 1. Script Slider Gambar
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        // Ganti gambar setiap 8 detik agar tidak terlalu cepat untuk baca teks
+        setInterval(nextSlide, 8000); 
+
+        // 2. Script Jam Digital (Disesuaikan dengan Waktu TV/Lokal)
+        function updateClock() {
+            const now = new Date();
+            
+            // Format Jam & Menit
+            let hours = now.getHours().toString().padStart(2, '0');
+            let minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('time').textContent = `${hours}:${minutes}`;
+            
+            // Format Tanggal (Contoh: SENIN, 01 JANUARI 2026)
+            const options = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+            let dateString = now.toLocaleDateString('id-ID', options).toUpperCase();
+            document.getElementById('date').textContent = dateString;
+        }
+        
+        // Update jam setiap detik
+        setInterval(updateClock, 1000);
+        updateClock(); // Panggil sekali saat load
+    </script>
+</body>
 </html>
