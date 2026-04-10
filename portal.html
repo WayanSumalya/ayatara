@@ -130,10 +130,18 @@
 
     <div class="video-section">
         <div class="video-overlay"></div>
-        <video autoplay loop muted playsinline>
-            <source src="https://wayansumalya.github.io/ayatara/asset/bg_resort.mp4" type="video/mp4">
-        </video>
+      <video id="resort-video" autoplay loop muted playsinline>
+            <source src="https://wayansumalya.github.io/ayatara-tv/asset/bg_resort.mp4" type="video/mp4">
+     </video>
     </div>
-
+<script>
+    // Memastikan TV mengulang video jika atribut 'loop' bawaan gagal bekerja
+    const bgVideo = document.getElementById('resort-video');
+    
+    bgVideo.addEventListener('ended', function() {
+        this.currentTime = 0; // Kembalikan ke detik ke-0
+        this.play();          // Putar paksa
+    }, false);
+</script>
 </body>
 </html>
