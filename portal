@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Letter - Resort TV</title>
+    <style>
+        /* Mengunci resolusi TV di 1280x720 untuk performa stabil */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1280px;
+            height: 720px;
+            background-color: #0d0d0d;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+            overflow: hidden; /* Mencegah munculnya scrollbar di TV */
+            display: flex;
+        }
+
+        /* -------------------------------------------
+           AREA KIRI: WELCOME LETTER (Lebar 2/3)
+        ------------------------------------------- */
+        .welcome-section {
+            width: 66.66%; 
+            height: 100%;
+            padding: 80px 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%);
+            position: relative;
+            z-index: 2;
+            /* Memberikan efek bayangan agar teks seolah berada di atas video */
+            box-shadow: 20px 0 40px rgba(0,0,0,0.9); 
+        }
+
+        .hotel-brand {
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4af37; /* Warna aksen emas */
+            letter-spacing: 3px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-size: 52px;
+            font-weight: 300;
+            margin-bottom: 25px;
+        }
+
+        .guest-name {
+            font-weight: bold;
+            color: #d4af37;
+        }
+
+        p.message {
+            font-size: 24px;
+            line-height: 1.6;
+            color: #cccccc;
+            margin-bottom: 50px;
+            max-width: 90%;
+        }
+
+        .instruction {
+            font-size: 20px;
+            color: #888888;
+            border-top: 1px solid #333;
+            padding-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Animasi fade in lambat agar terkesan mewah */
+        .fade-in {
+            animation: fadeIn 2s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* -------------------------------------------
+           AREA KANAN: VIDEO BACKGROUND (Lebar 1/3)
+        ------------------------------------------- */
+        .video-section {
+            width: 33.34%; 
+            height: 100%;
+            position: relative;
+            background-color: #000;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            /* object-fit: cover sangat penting agar video mengisi 
+               kolom 1/3 tanpa merusak rasio asli */
+            object-fit: cover; 
+            pointer-events: none;
+        }
+
+        /* Gradient overlay di atas video untuk blending tepi layar */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #050505 0%, rgba(0,0,0,0) 15%);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="welcome-section">
+        <div class="fade-in">
+            <div class="hotel-brand">THE HOTEL</div>
+            <h1>Welcome, <span class="guest-name">John Doe</span></h1>
+            <p class="message">
+                Kami sangat senang menyambut Anda. Nikmati kenyamanan fasilitas kelas dunia dan layanan tanpa batas selama Anda menginap bersama kami. 
+            </p>
+            <div class="instruction">
+                <span>Tekan tombol <strong>OK</strong> pada remote Anda untuk masuk ke menu utama.</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="video-section">
+        <div class="video-overlay"></div>
+        <video autoplay loop muted playsinline>
+            <source src="https://wayansumalya.github.io/ayatara-tv/asset/bg_resort.mp4" type="video/mp4">
+        </video>
+    </div>
+
+</body>
+</html>
