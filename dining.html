@@ -232,10 +232,11 @@
                     window.open("#/page/InRoomDining", "_parent");
                 }
             }
-            // 4. BACK / RETURN - Keluar ke Home
+           // 4. BACK / RETURN - Keluar ke Home
             else if (e.keyCode === 461 || e.keyCode === 27 || e.keyCode === 8) {
-                // METHOD A: Buka portal utama di jendela parent (induk)
-                window.open("#/page/portal", "_parent");
+                // Memerintahkan jendela induk (Pro:Centric) untuk mundur ke history sebelumnya
+                // Ini otomatis mengembalikan tamu ke portal.html tanpa Anda perlu tahu URL IP pastinya!
+                window.open("javascript:history.back()", "_parent");
             }
 
             // Terapkan class 'focused' untuk efek visual (garis emas & zoom)
