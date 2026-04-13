@@ -19,16 +19,14 @@
         }
         @keyframes slowPan { 0% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(-5%, -5%) rotate(1deg); } 100% { transform: translate(0, 0) rotate(0deg); } }
 
-        /* PANEL KIRI: MENU LIST (35%) */
+        /* PANEL KIRI: MENU LIST */
         .left-panel {
             width: 35%; height: 100%; background: linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.8) 100%);
             padding: 60px 40px; z-index: 2; display: flex; flex-direction: column;
             border-right: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 20px 0 50px rgba(0,0,0,0.8);
         }
-
         .header-title { font-size: 16px; color: #d4af37; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 40px; }
         .menu-list { display: flex; flex-direction: column; gap: 15px; }
-        
         .menu-item {
             padding: 20px 25px; border-radius: 8px; border: 1px solid transparent;
             font-size: 22px; font-weight: 300; color: #aaa; transition: all 0.3s ease;
@@ -38,51 +36,72 @@
             color: #fff; transform: translateX(10px); font-weight: 400;
         }
 
-        /* PANEL KANAN: PREVIEW GAMBAR (65%) */
+        /* PANEL KANAN: PREVIEW GAMBAR */
         .right-panel { width: 65%; height: 100%; position: relative; z-index: 1; background: #000; }
-
-        .preview-image {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; opacity: 0; transition: opacity 0.6s ease;
-        }
+        .preview-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.6s ease; }
         .preview-image.active { opacity: 1; }
-
-        /* Khusus untuk tampilan QR Code agar tidak terpotong */
-        .preview-image.qr-mode {
-            object-fit: contain;
-            padding: 80px 80px 250px 80px; /* Memberi ruang di bawah untuk teks */
-            background: radial-gradient(circle at 50% 50%, rgba(30,30,30,1) 0%, rgba(5,5,5,1) 100%);
-        }
-
+        .preview-image.contain-mode { object-fit: contain; background: #111; padding: 40px; }
         .preview-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%); pointer-events: none;}
-
         .preview-content { position: absolute; bottom: 60px; left: 50px; right: 50px; pointer-events: none;}
         .preview-title { font-size: 46px; font-weight: 300; margin-bottom: 10px; color: #fff; }
         .preview-short-desc { font-size: 18px; color: #ddd; line-height: 1.5; margin-bottom: 20px; font-weight: 300; }
         .enter-hint { font-size: 14px; color: #d4af37; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
         .enter-hint span { display: inline-block; padding: 4px 10px; border: 1px solid #d4af37; border-radius: 4px; color: #fff; }
 
-        /* MODAL DETAIL FULLSCREEN */
+        /* =========================================
+           MODE 1: FULL PAGE BOOK MODAL (UNTUK A4) 
+           ========================================= */
+        .book-modal {
+            position: fixed; top: 0; left: 0; width: 1280px; height: 720px;
+            background: rgba(10, 10, 10, 0.98); z-index: 200; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+        }
+        .book-modal.open { opacity: 1; pointer-events: auto; }
+        
+        .book-container {
+            width: 100%; height: 640px; /* Sisa ruang untuk navigasi di bawah */
+            position: relative; display: flex; justify-content: center; align-items: center;
+        }
+
+        .book-page {
+            position: absolute; height: 100%; max-width: 90%;
+            object-fit: contain; background: #fff;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            opacity: 0; transform: translateX(50px); /* Posisi awal untuk efek masuk */
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        
+        /* Efek Animasi Membaca Buku */
+        .book-page.active { opacity: 1; transform: translateX(0); z-index: 10; }
+        .book-page.slide-left { opacity: 0; transform: translateX(-50px); z-index: 1; } /* Keluar ke kiri */
+        .book-page.slide-right { opacity: 0; transform: translateX(50px); z-index: 1; } /* Keluar ke kanan */
+
+        /* UI Navigasi Buku */
+        .book-nav-bar {
+            width: 100%; height: 80px; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 60px; background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0));
+        }
+        .book-counter { font-size: 18px; color: #d4af37; letter-spacing: 2px; font-weight: bold; }
+        .book-hint { font-size: 16px; color: #ccc; letter-spacing: 1px; text-transform: uppercase; }
+        .book-hint span { color: #d4af37; font-weight: bold; }
+
+        /* =========================================
+           MODE 2: SPLIT SCREEN DETAIL MODAL (MAKANAN)
+           ========================================= */
         .detail-modal {
             position: fixed; top: 0; left: 0; width: 1280px; height: 720px;
             background: rgba(5,5,5,0.98); z-index: 100; display: flex; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
         }
         .detail-modal.open { opacity: 1; pointer-events: auto; }
-
         .detail-img-container { width: 50%; height: 100%; position: relative; }
         .detail-img { width: 100%; height: 100%; object-fit: cover; }
-        .detail-img.qr-mode { object-fit: contain; padding: 60px; background: #fff; }
-        
-        .detail-img-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(0,0,0,0) 50%, rgba(5,5,5,1) 100%); }
-
+        .detail-img-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(0,0,0,0) 50%, rgba(5,5,5,1) 100%); pointer-events: none;}
         .detail-text-container { width: 50%; height: 100%; padding: 80px 60px; display: flex; flex-direction: column; justify-content: center; }
         .detail-full-title { font-size: 42px; font-weight: 300; color: #d4af37; margin-bottom: 20px; }
         .detail-full-desc { font-size: 20px; color: #e0e0e0; line-height: 1.8; margin-bottom: 40px; font-weight: 300; }
-        
         .detail-info-box { background: rgba(255,255,255,0.05); padding: 20px; border-left: 3px solid #d4af37; margin-bottom: 40px; }
         .detail-info-box p { font-size: 16px; color: #ccc; line-height: 1.6; }
         .detail-info-box strong { color: #fff; }
-
         .back-hint { font-size: 16px; color: #888; letter-spacing: 1px; }
         .back-hint span { color: #d4af37; font-weight: bold; }
     </style>
@@ -98,11 +117,20 @@
 
     <div class="right-panel">
         <div id="image-container"></div>
-        <div class="preview-overlay" id="preview-overlay"></div>
+        <div class="preview-overlay"></div>
         <div class="preview-content">
             <h1 class="preview-title" id="preview-title">Judul</h1>
             <p class="preview-short-desc" id="preview-short-desc">Deskripsi Singkat</p>
-            <div class="enter-hint"><span>OK</span> View Details / Full Menu</div>
+            <div class="enter-hint"><span>OK</span> View Detail</div>
+        </div>
+    </div>
+
+    <div class="book-modal" id="book-modal">
+        <div class="book-container" id="book-container">
+            </div>
+        <div class="book-nav-bar">
+            <div class="book-counter">Page <span id="book-cur-idx">1</span> of <span id="book-tot-idx">3</span></div>
+            <div class="book-hint">&larr; <span>GESER KIRI/KANAN</span> &rarr; &nbsp;&nbsp;&bull;&nbsp;&nbsp; Tekan <span>BACK/OK</span> untuk keluar</div>
         </div>
     </div>
 
@@ -120,67 +148,74 @@
     </div>
 
     <script>
-        // DATA MENU JIVARA RESTO
+        // ==========================================
+        // DATA MENU
+        // ==========================================
         const jivaraMenu = [
             {
-                title: "View Full Menu (QR)",
-                shortDesc: "Scan the QR code to explore our complete Lunch & Dinner menu on your mobile device.",
-                longDesc: "For your reading comfort, please scan the QR code to view our complete digital menu on your smartphone. Discover our wide range of appetizers, signature dishes, vegan options, and curated beverages.",
-                extraInfo: "<p><strong>Link:</strong> ayatararesort.com/menu</p><p><strong>How to Order:</strong> Dial 'Dining' from your room telephone.</p>",
-                // Menggunakan API pembuat QR Code otomatis yang mengarah langsung ke PDF Anda!
-                image: "https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=https://ayatararesort.com/wp-content/uploads/2026/03/Lunch-and-Dinner-Menu.pdf&margin=20",
-                isQR: true // Penanda khusus agar CSS menyesuaikan bentuk QR
+                title: "View Full Menu",
+                shortDesc: "Explore our complete Lunch & Dinner menu in full screen.",
+                isFullMenu: true, // TRIGGER KHUSUS UNTUK MEMBUKA BUKU A4
+                // MASUKKAN LINK GAMBAR A4 PNG ANDA DI SINI BERURUTAN
+                images: [
+                    "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=800", // Contoh Gambar A4 Hal 1
+                    "https://images.unsplash.com/photo-1528605105345-5344ea20e269?q=80&w=800", // Hal 2
+                    "https://images.unsplash.com/photo-1544148103-0773bf10d330?q=80&w=800"  // Hal 3
+                ]
             },
             {
                 title: "Our Best Seller",
                 shortDesc: "Ayam Betutu Ayatara - Slow-cooked traditional Balinese chicken with rich spices.",
                 longDesc: "Experience the authentic taste of Bali with our Ayam Betutu. Marinated in a secret blend of local spices and slow-cooked for hours to perfection, ensuring every bite is tender and flavorful. Served with fragrant steamed rice, sambal matah, and clear chicken soup.",
                 extraInfo: "<p><strong>Price:</strong> IDR 185,000++</p><p><strong>Chef's Recommendation:</strong> Pairs perfectly with chilled lemongrass tea.</p>",
-                image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200",
-                isQR: false
+                isFullMenu: false, // Buka Modal Biasa
+                images: ["https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200"]
             },
             {
                 title: "Signature Main Course",
                 shortDesc: "Pan-Seared Salmon with Lemon Butter Sauce and Asparagus.",
                 longDesc: "Fresh, premium Atlantic salmon pan-seared to a perfect golden crisp, resting on a bed of creamy mashed potatoes and butter-glazed asparagus. Finished with our signature lemon butter and caper sauce.",
                 extraInfo: "<p><strong>Price:</strong> IDR 245,000++</p><p><strong>Category:</strong> Western / Seafood</p>",
-                image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200",
-                isQR: false
-            },
-            {
-                title: "Balinese Local Delights",
-                shortDesc: "Sate Lilit Ikan - Minced seafood satay wrapped on lemongrass stalks.",
-                longDesc: "A true Balinese classic. Freshly caught fish minced with grated coconut, lime leaves, and authentic spices, carefully wrapped around aromatic lemongrass skewers and grilled over coconut husks.",
-                extraInfo: "<p><strong>Price:</strong> IDR 120,000++</p><p><strong>Note:</strong> Served with peanut sauce and rice cakes.</p>",
-                image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200",
-                isQR: false
+                isFullMenu: false,
+                images: ["https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200"]
             }
         ];
 
+        // Referensi Elemen UI
         const menuListDiv = document.getElementById('menu-list');
         const imgContainer = document.getElementById('image-container');
         const previewTitle = document.getElementById('preview-title');
         const previewShortDesc = document.getElementById('preview-short-desc');
-        const previewOverlay = document.getElementById('preview-overlay');
         
-        const modal = document.getElementById('detail-modal');
+        // Elemen Modal Buku (Full Page)
+        const bookModal = document.getElementById('book-modal');
+        const bookContainer = document.getElementById('book-container');
+        const bookCurIdx = document.getElementById('book-cur-idx');
+        const bookTotIdx = document.getElementById('book-tot-idx');
+
+        // Elemen Modal Detail (Split Screen)
+        const detailModal = document.getElementById('detail-modal');
         const detailImg = document.getElementById('detail-full-img');
         const detailTitle = document.getElementById('detail-full-title');
         const detailDesc = document.getElementById('detail-full-desc');
         const detailInfo = document.getElementById('detail-info-box');
 
+        // Render List & Gambar Preview (Layar Utama Kanan)
         jivaraMenu.forEach((item, index) => {
             menuListDiv.innerHTML += `<div class="menu-item" id="menu-${index}">${item.title}</div>`;
-            // Jika isQR true, tambahkan class qr-mode agar gambar proporsional
-            const qrClass = item.isQR ? 'qr-mode' : '';
-            imgContainer.innerHTML += `<img src="${item.image}" class="preview-image ${qrClass}" id="img-${index}">`;
+            const cssClass = item.isFullMenu ? 'contain-mode' : '';
+            imgContainer.innerHTML += `<img src="${item.images[0]}" class="preview-image ${cssClass}" id="img-${index}">`;
         });
 
-        let currentIdx = 0;
-        let isDetailOpen = false;
+        // State Navigasi
+        let currentIdx = 0;          // Posisi Menu Kiri
+        let isBookOpen = false;      // Status Modal Full Page
+        let isDetailOpen = false;    // Status Modal Detail Makanan
+        let currentBookPage = 0;     // Halaman Buku Saat Ini
         const totalItems = jivaraMenu.length;
         window.focus();
 
+        // 1. Fungsi Update Preview Utama
         function updatePreview() {
             for(let i=0; i<totalItems; i++) {
                 document.getElementById(`menu-${i}`).classList.remove('focused');
@@ -191,44 +226,96 @@
             
             previewTitle.innerText = jivaraMenu[currentIdx].title;
             previewShortDesc.innerText = jivaraMenu[currentIdx].shortDesc;
-
-            // Transparansikan overlay hitam jika sedang mode QR agar kodenya mudah discan
-            if(jivaraMenu[currentIdx].isQR) {
-                previewOverlay.style.opacity = '0.4';
-            } else {
-                previewOverlay.style.opacity = '1';
-            }
         }
 
-        function openDetail() {
+        // 2. Fungsi Buka Modal Detail Biasa (Makanan Spesifik)
+        function openDetailModal() {
             isDetailOpen = true;
-            detailImg.src = jivaraMenu[currentIdx].image;
-            
-            if(jivaraMenu[currentIdx].isQR) {
-                detailImg.classList.add('qr-mode');
-            } else {
-                detailImg.classList.remove('qr-mode');
-            }
-
+            detailImg.src = jivaraMenu[currentIdx].images[0];
             detailTitle.innerText = jivaraMenu[currentIdx].title;
             detailDesc.innerText = jivaraMenu[currentIdx].longDesc;
             detailInfo.innerHTML = jivaraMenu[currentIdx].extraInfo;
-            modal.classList.add('open');
+            detailModal.classList.add('open');
         }
 
+        // 3. Fungsi Buka BUKU FULL PAGE (A4)
+        function openBookModal() {
+            isBookOpen = true;
+            currentBookPage = 0;
+            const images = jivaraMenu[currentIdx].images;
+            
+            // Bersihkan container buku dan siapkan gambar HTML
+            bookContainer.innerHTML = '';
+            images.forEach((src, idx) => {
+                const isActive = idx === 0 ? 'active' : 'slide-right'; // Gambar 1 aktif, lainnya sembunyi di kanan
+                bookContainer.innerHTML += `<img src="${src}" class="book-page ${isActive}" id="book-pg-${idx}">`;
+            });
+
+            bookTotIdx.innerText = images.length;
+            updateBookCounter();
+            bookModal.classList.add('open');
+        }
+
+        // 4. Fungsi Animasi Geser Halaman Buku
+        function flipBookPage(direction) {
+            const images = jivaraMenu[currentIdx].images;
+            const oldPage = document.getElementById(`book-pg-${currentBookPage}`);
+            
+            if (direction === 'next' && currentBookPage < images.length - 1) {
+                // Halaman lama geser ke KIRI, Halaman baru masuk dari KANAN
+                oldPage.className = 'book-page slide-left';
+                currentBookPage++;
+                document.getElementById(`book-pg-${currentBookPage}`).className = 'book-page active';
+            } 
+            else if (direction === 'prev' && currentBookPage > 0) {
+                // Halaman lama geser ke KANAN, Halaman baru masuk dari KIRI
+                oldPage.className = 'book-page slide-right';
+                currentBookPage--;
+                document.getElementById(`book-pg-${currentBookPage}`).className = 'book-page active';
+            }
+            updateBookCounter();
+        }
+
+        function updateBookCounter() {
+            bookCurIdx.innerText = currentBookPage + 1;
+        }
+
+        // Panggil untuk pertama kali
         updatePreview();
 
+        // ==========================================
+        // LOGIKA REMOTE CONTROL TV
+        // ==========================================
         document.addEventListener('keydown', (e) => {
             const key = e.keyCode;
 
-            if (!isDetailOpen) {
+            // STATE 1: SEDANG BUKA BUKU MENU A4
+            if (isBookOpen) {
+                if (key === 39) flipBookPage('next');      // Kanan
+                else if (key === 37) flipBookPage('prev'); // Kiri
+                else if (key === 461 || key === 27 || key === 8 || key === 13) { 
+                    isBookOpen = false; bookModal.classList.remove('open'); // Back / Enter menutup buku
+                }
+            } 
+            // STATE 2: SEDANG BUKA DETAIL MAKANAN BIASA
+            else if (isDetailOpen) {
+                if (key === 461 || key === 27 || key === 8 || key === 13) { 
+                    isDetailOpen = false; detailModal.classList.remove('open'); 
+                }
+            } 
+            // STATE 3: DI MENU UTAMA
+            else {
                 if (key === 40 || key === 39) { currentIdx = (currentIdx + 1) % totalItems; updatePreview(); } 
                 else if (key === 38 || key === 37) { currentIdx = (currentIdx - 1 + totalItems) % totalItems; updatePreview(); }
-                else if (key === 13) { openDetail(); }
-                // Tombol Back di TV - Kembali ke halaman 2 Card (dining.html)
-                else if (key === 461 || key === 27 || key === 8) { window.location.href = "dining.html"; }
-            } else {
-                if (key === 461 || key === 27 || key === 8 || key === 13) { isDetailOpen = false; modal.classList.remove('open'); }
+                
+                else if (key === 13) { // TOMBOL ENTER DITEKAN
+                    if (jivaraMenu[currentIdx].isFullMenu) openBookModal(); // Jika itu menu A4, buka mode Buku
+                    else openDetailModal(); // Jika itu makanan biasa, buka mode Detail
+                }
+                
+                else if (key === 461 || key === 27 || key === 8) { 
+                    window.location.href = "dining.html"; // Kembali ke halaman 2 Card Restoran
+                }
             }
         });
     </script>
