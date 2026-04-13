@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jivara Resto - Ayatara Resort TV</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            width: 1280px; height: 720px; background-color: #050505;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff; overflow: hidden; display: flex; position: relative; z-index: 1;
+        }
+
+        .bali-bg-layer {
+            position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            animation: slowPan 60s linear infinite;
+        }
+        @keyframes slowPan { 0% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(-5%, -5%) rotate(1deg); } 100% { transform: translate(0, 0) rotate(0deg); } }
+
+        /* PANEL KIRI: MENU LIST (35%) */
+        .left-panel {
+            width: 35%; height: 100%; background: linear-gradient(to right, rgba(10,10,10,0.95) 0%, rgba(10,10,10,0.8) 100%);
+            padding: 60px 40px; z-index: 2; display: flex; flex-direction: column;
+            border-right: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 20px 0 50px rgba(0,0,0,0.8);
+        }
+
+        .header-title { font-size: 16px; color: #d4af37; letter-spacing: 5px; text-transform: uppercase; margin-bottom: 40px; }
+        .menu-list { display: flex; flex-direction: column; gap: 15px; }
+        
+        .menu-item {
+            padding: 20px 25px; border-radius: 8px; border: 1px solid transparent;
+            font-size: 22px; font-weight: 300; color: #aaa; transition: all 0.3s ease;
+        }
+        .menu-item.focused {
+            background: rgba(212, 175, 55, 0.1); border: 1px solid #d4af37;
+            color: #fff; transform: translateX(10px); font-weight: 400;
+        }
+
+        /* PANEL KANAN: PREVIEW GAMBAR (65%) */
+        .right-panel { width: 65%; height: 100%; position: relative; z-index: 1; }
+
+        .preview-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0; transition: opacity 0.6s ease;
+        }
+        .preview-image.active { opacity: 1; }
+
+        .preview-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%); }
+
+        .preview-content { position: absolute; bottom: 60px; left: 50px; right: 50px; }
+        .preview-title { font-size: 46px; font-weight: 300; margin-bottom: 10px; color: #fff; }
+        .preview-short-desc { font-size: 18px; color: #ddd; line-height: 1.5; margin-bottom: 20px; font-weight: 300; }
+        .enter-hint { font-size: 14px; color: #d4af37; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+        .enter-hint span { display: inline-block; padding: 4px 10px; border: 1px solid #d4af37; border-radius: 4px; color: #fff; }
+
+        /* MODAL DETAIL FULLSCREEN */
+        .detail-modal {
+            position: fixed; top: 0; left: 0; width: 1280px; height: 720px;
+            background: rgba(5,5,5,0.98); z-index: 100; display: flex; opacity: 0; pointer-events: none; transition: opacity 0.5s ease;
+        }
+        .detail-modal.open { opacity: 1; pointer-events: auto; }
+
+        .detail-img-container { width: 50%; height: 100%; position: relative; }
+        .detail-img { width: 100%; height: 100%; object-fit: cover; }
+        .detail-img-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(0,0,0,0), rgba(5,5,5,1)); }
+
+        .detail-text-container { width: 50%; height: 100%; padding: 80px 60px; display: flex; flex-direction: column; justify-content: center; }
+        .detail-full-title { font-size: 42px; font-weight: 300; color: #d4af37; margin-bottom: 20px; }
+        .detail-full-desc { font-size: 20px; color: #e0e0e0; line-height: 1.8; margin-bottom: 40px; font-weight: 300; }
+        
+        .detail-info-box { background: rgba(255,255,255,0.05); padding: 20px; border-left: 3px solid #d4af37; margin-bottom: 40px; }
+        .detail-info-box p { font-size: 16px; color: #ccc; line-height: 1.6; }
+        .detail-info-box strong { color: #fff; }
+
+        .back-hint { font-size: 16px; color: #888; letter-spacing: 1px; }
+        .back-hint span { color: #d4af37; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="bali-bg-layer"></div>
+
+    <div class="left-panel">
+        <div class="header-title">Jivara Restaurant</div>
+        <div class="menu-list" id="menu-list"></div>
+    </div>
+
+    <div class="right-panel">
+        <div id="image-container"></div>
+        <div class="preview-overlay"></div>
+        <div class="preview-content">
+            <h1 class="preview-title" id="preview-title">Judul</h1>
+            <p class="preview-short-desc" id="preview-short-desc">Deskripsi Singkat</p>
+            <div class="enter-hint"><span>OK</span> View Details & Price</div>
+        </div>
+    </div>
+
+    <div class="detail-modal" id="detail-modal">
+        <div class="detail-img-container">
+            <img src="" class="detail-img" id="detail-full-img">
+            <div class="detail-img-overlay"></div>
+        </div>
+        <div class="detail-text-container">
+            <h2 class="detail-full-title" id="detail-full-title">Judul Detail</h2>
+            <p class="detail-full-desc" id="detail-full-desc">Deskripsi</p>
+            <div class="detail-info-box" id="detail-info-box"></div>
+            <div class="back-hint">&larr; Press <span>BACK</span> to return</div>
+        </div>
+    </div>
+
+    <script>
+        // DATA MENU JIVARA RESTO
+        const jivaraMenu = [
+            {
+                title: "Our Best Seller",
+                shortDesc: "Ayam Betutu Ayatara - Slow-cooked traditional Balinese chicken with rich spices.",
+                longDesc: "Experience the authentic taste of Bali with our Ayam Betutu. Marinated in a secret blend of local spices and slow-cooked for hours to perfection, ensuring every bite is tender and flavorful. Served with fragrant steamed rice, sambal matah, and clear chicken soup.",
+                extraInfo: "<p><strong>Price:</strong> IDR 185,000++</p><p><strong>Chef's Recommendation:</strong> Pairs perfectly with chilled lemongrass tea.</p>",
+                image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200" // Ganti Foto Makanan
+            },
+            {
+                title: "Signature Main Course",
+                shortDesc: "Pan-Seared Salmon with Lemon Butter Sauce and Asparagus.",
+                longDesc: "Fresh, premium Atlantic salmon pan-seared to a perfect golden crisp, resting on a bed of creamy mashed potatoes and butter-glazed asparagus. Finished with our signature lemon butter and caper sauce.",
+                extraInfo: "<p><strong>Price:</strong> IDR 245,000++</p><p><strong>Category:</strong> Western / Seafood</p>",
+                image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200" // Ganti Foto Makanan
+            },
+            {
+                title: "Balinese Local Delights",
+                shortDesc: "Sate Lilit Ikan - Minced seafood satay wrapped on lemongrass stalks.",
+                longDesc: "A true Balinese classic. Freshly caught fish minced with grated coconut, lime leaves, and authentic spices, carefully wrapped around aromatic lemongrass skewers and grilled over coconut husks.",
+                extraInfo: "<p><strong>Price:</strong> IDR 120,000++</p><p><strong>Note:</strong> Served with peanut sauce and rice cakes.</p>",
+                image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200" // Ganti Foto Makanan
+            },
+            {
+                title: "Sweet Signature Dessert",
+                shortDesc: "Coconut Pandan Panna Cotta with Mango Coulis.",
+                longDesc: "End your dining experience on a sweet note. A delicate Italian dessert infused with local Balinese pandan and rich coconut milk, topped with a refreshing, tangy mango purée and a caramelized tuile.",
+                extraInfo: "<p><strong>Price:</strong> IDR 85,000++</p><p><strong>Category:</strong> Dessert</p>",
+                image: "https://images.unsplash.com/photo-1563805042-7684c8a9e9cb?q=80&w=1200" // Ganti Foto Dessert
+            }
+        ];
+
+        const menuListDiv = document.getElementById('menu-list');
+        const imgContainer = document.getElementById('image-container');
+        const previewTitle = document.getElementById('preview-title');
+        const previewShortDesc = document.getElementById('preview-short-desc');
+        
+        const modal = document.getElementById('detail-modal');
+        const detailImg = document.getElementById('detail-full-img');
+        const detailTitle = document.getElementById('detail-full-title');
+        const detailDesc = document.getElementById('detail-full-desc');
+        const detailInfo = document.getElementById('detail-info-box');
+
+        jivaraMenu.forEach((item, index) => {
+            menuListDiv.innerHTML += `<div class="menu-item" id="menu-${index}">${item.title}</div>`;
+            imgContainer.innerHTML += `<img src="${item.image}" class="preview-image" id="img-${index}">`;
+        });
+
+        let currentIdx = 0;
+        let isDetailOpen = false;
+        const totalItems = jivaraMenu.length;
+        window.focus();
+
+        function updatePreview() {
+            for(let i=0; i<totalItems; i++) {
+                document.getElementById(`menu-${i}`).classList.remove('focused');
+                document.getElementById(`img-${i}`).classList.remove('active');
+            }
+            document.getElementById(`menu-${currentIdx}`).classList.add('focused');
+            document.getElementById(`img-${currentIdx}`).classList.add('active');
+            previewTitle.innerText = jivaraMenu[currentIdx].title;
+            previewShortDesc.innerText = jivaraMenu[currentIdx].shortDesc;
+        }
+
+        function openDetail() {
+            isDetailOpen = true;
+            detailImg.src = jivaraMenu[currentIdx].image;
+            detailTitle.innerText = jivaraMenu[currentIdx].title;
+            detailDesc.innerText = jivaraMenu[currentIdx].longDesc;
+            detailInfo.innerHTML = jivaraMenu[currentIdx].extraInfo;
+            modal.classList.add('open');
+        }
+
+        updatePreview();
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.keyCode;
+
+            if (!isDetailOpen) {
+                if (key === 40 || key === 39) { currentIdx = (currentIdx + 1) % totalItems; updatePreview(); } 
+                else if (key === 38 || key === 37) { currentIdx = (currentIdx - 1 + totalItems) % totalItems; updatePreview(); }
+                else if (key === 13) { openDetail(); }
+                // Tombol Back di TV - Kembali ke halaman 2 Card (dining.html)
+                else if (key === 461 || key === 27 || key === 8) { window.location.href = "dining.html"; }
+            } else {
+                if (key === 461 || key === 27 || key === 8 || key === 13) { isDetailOpen = false; modal.classList.remove('open'); }
+            }
+        });
+    </script>
+</body>
+</html>
