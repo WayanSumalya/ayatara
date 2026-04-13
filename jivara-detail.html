@@ -39,7 +39,7 @@
         }
 
         /* PANEL KANAN: PREVIEW GAMBAR (65%) */
-        .right-panel { width: 65%; height: 100%; position: relative; z-index: 1; }
+        .right-panel { width: 65%; height: 100%; position: relative; z-index: 1; background: #000; }
 
         .preview-image {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -47,9 +47,16 @@
         }
         .preview-image.active { opacity: 1; }
 
-        .preview-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%); }
+        /* Khusus untuk tampilan QR Code agar tidak terpotong */
+        .preview-image.qr-mode {
+            object-fit: contain;
+            padding: 80px 80px 250px 80px; /* Memberi ruang di bawah untuk teks */
+            background: radial-gradient(circle at 50% 50%, rgba(30,30,30,1) 0%, rgba(5,5,5,1) 100%);
+        }
 
-        .preview-content { position: absolute; bottom: 60px; left: 50px; right: 50px; }
+        .preview-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0) 100%); pointer-events: none;}
+
+        .preview-content { position: absolute; bottom: 60px; left: 50px; right: 50px; pointer-events: none;}
         .preview-title { font-size: 46px; font-weight: 300; margin-bottom: 10px; color: #fff; }
         .preview-short-desc { font-size: 18px; color: #ddd; line-height: 1.5; margin-bottom: 20px; font-weight: 300; }
         .enter-hint { font-size: 14px; color: #d4af37; letter-spacing: 2px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
@@ -64,7 +71,9 @@
 
         .detail-img-container { width: 50%; height: 100%; position: relative; }
         .detail-img { width: 100%; height: 100%; object-fit: cover; }
-        .detail-img-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(0,0,0,0), rgba(5,5,5,1)); }
+        .detail-img.qr-mode { object-fit: contain; padding: 60px; background: #fff; }
+        
+        .detail-img-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to right, rgba(0,0,0,0) 50%, rgba(5,5,5,1) 100%); }
 
         .detail-text-container { width: 50%; height: 100%; padding: 80px 60px; display: flex; flex-direction: column; justify-content: center; }
         .detail-full-title { font-size: 42px; font-weight: 300; color: #d4af37; margin-bottom: 20px; }
@@ -89,11 +98,11 @@
 
     <div class="right-panel">
         <div id="image-container"></div>
-        <div class="preview-overlay"></div>
+        <div class="preview-overlay" id="preview-overlay"></div>
         <div class="preview-content">
             <h1 class="preview-title" id="preview-title">Judul</h1>
             <p class="preview-short-desc" id="preview-short-desc">Deskripsi Singkat</p>
-            <div class="enter-hint"><span>OK</span> View Details & Price</div>
+            <div class="enter-hint"><span>OK</span> View Details / Full Menu</div>
         </div>
     </div>
 
@@ -114,32 +123,37 @@
         // DATA MENU JIVARA RESTO
         const jivaraMenu = [
             {
+                title: "View Full Menu (QR)",
+                shortDesc: "Scan the QR code to explore our complete Lunch & Dinner menu on your mobile device.",
+                longDesc: "For your reading comfort, please scan the QR code to view our complete digital menu on your smartphone. Discover our wide range of appetizers, signature dishes, vegan options, and curated beverages.",
+                extraInfo: "<p><strong>Link:</strong> ayatararesort.com/menu</p><p><strong>How to Order:</strong> Dial 'Dining' from your room telephone.</p>",
+                // Menggunakan API pembuat QR Code otomatis yang mengarah langsung ke PDF Anda!
+                image: "https://api.qrserver.com/v1/create-qr-code/?size=600x600&data=https://ayatararesort.com/wp-content/uploads/2026/03/Lunch-and-Dinner-Menu.pdf&margin=20",
+                isQR: true // Penanda khusus agar CSS menyesuaikan bentuk QR
+            },
+            {
                 title: "Our Best Seller",
                 shortDesc: "Ayam Betutu Ayatara - Slow-cooked traditional Balinese chicken with rich spices.",
                 longDesc: "Experience the authentic taste of Bali with our Ayam Betutu. Marinated in a secret blend of local spices and slow-cooked for hours to perfection, ensuring every bite is tender and flavorful. Served with fragrant steamed rice, sambal matah, and clear chicken soup.",
                 extraInfo: "<p><strong>Price:</strong> IDR 185,000++</p><p><strong>Chef's Recommendation:</strong> Pairs perfectly with chilled lemongrass tea.</p>",
-                image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200" // Ganti Foto Makanan
+                image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=1200",
+                isQR: false
             },
             {
                 title: "Signature Main Course",
                 shortDesc: "Pan-Seared Salmon with Lemon Butter Sauce and Asparagus.",
                 longDesc: "Fresh, premium Atlantic salmon pan-seared to a perfect golden crisp, resting on a bed of creamy mashed potatoes and butter-glazed asparagus. Finished with our signature lemon butter and caper sauce.",
                 extraInfo: "<p><strong>Price:</strong> IDR 245,000++</p><p><strong>Category:</strong> Western / Seafood</p>",
-                image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200" // Ganti Foto Makanan
+                image: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1200",
+                isQR: false
             },
             {
                 title: "Balinese Local Delights",
                 shortDesc: "Sate Lilit Ikan - Minced seafood satay wrapped on lemongrass stalks.",
                 longDesc: "A true Balinese classic. Freshly caught fish minced with grated coconut, lime leaves, and authentic spices, carefully wrapped around aromatic lemongrass skewers and grilled over coconut husks.",
                 extraInfo: "<p><strong>Price:</strong> IDR 120,000++</p><p><strong>Note:</strong> Served with peanut sauce and rice cakes.</p>",
-                image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200" // Ganti Foto Makanan
-            },
-            {
-                title: "Sweet Signature Dessert",
-                shortDesc: "Coconut Pandan Panna Cotta with Mango Coulis.",
-                longDesc: "End your dining experience on a sweet note. A delicate Italian dessert infused with local Balinese pandan and rich coconut milk, topped with a refreshing, tangy mango purée and a caramelized tuile.",
-                extraInfo: "<p><strong>Price:</strong> IDR 85,000++</p><p><strong>Category:</strong> Dessert</p>",
-                image: "https://images.unsplash.com/photo-1563805042-7684c8a9e9cb?q=80&w=1200" // Ganti Foto Dessert
+                image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200",
+                isQR: false
             }
         ];
 
@@ -147,6 +161,7 @@
         const imgContainer = document.getElementById('image-container');
         const previewTitle = document.getElementById('preview-title');
         const previewShortDesc = document.getElementById('preview-short-desc');
+        const previewOverlay = document.getElementById('preview-overlay');
         
         const modal = document.getElementById('detail-modal');
         const detailImg = document.getElementById('detail-full-img');
@@ -156,7 +171,9 @@
 
         jivaraMenu.forEach((item, index) => {
             menuListDiv.innerHTML += `<div class="menu-item" id="menu-${index}">${item.title}</div>`;
-            imgContainer.innerHTML += `<img src="${item.image}" class="preview-image" id="img-${index}">`;
+            // Jika isQR true, tambahkan class qr-mode agar gambar proporsional
+            const qrClass = item.isQR ? 'qr-mode' : '';
+            imgContainer.innerHTML += `<img src="${item.image}" class="preview-image ${qrClass}" id="img-${index}">`;
         });
 
         let currentIdx = 0;
@@ -171,13 +188,28 @@
             }
             document.getElementById(`menu-${currentIdx}`).classList.add('focused');
             document.getElementById(`img-${currentIdx}`).classList.add('active');
+            
             previewTitle.innerText = jivaraMenu[currentIdx].title;
             previewShortDesc.innerText = jivaraMenu[currentIdx].shortDesc;
+
+            // Transparansikan overlay hitam jika sedang mode QR agar kodenya mudah discan
+            if(jivaraMenu[currentIdx].isQR) {
+                previewOverlay.style.opacity = '0.4';
+            } else {
+                previewOverlay.style.opacity = '1';
+            }
         }
 
         function openDetail() {
             isDetailOpen = true;
             detailImg.src = jivaraMenu[currentIdx].image;
+            
+            if(jivaraMenu[currentIdx].isQR) {
+                detailImg.classList.add('qr-mode');
+            } else {
+                detailImg.classList.remove('qr-mode');
+            }
+
             detailTitle.innerText = jivaraMenu[currentIdx].title;
             detailDesc.innerText = jivaraMenu[currentIdx].longDesc;
             detailInfo.innerHTML = jivaraMenu[currentIdx].extraInfo;
