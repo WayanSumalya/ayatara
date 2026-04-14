@@ -2,19 +2,29 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Welcome Letter - Resort TV</title>
+    
+    <link rel="preload" href="https://wayansumalya.github.io/ayatara/asset/yoga.mp4" as="video" type="video/mp4">
+    <link rel="preload" href="https://wayansumalya.github.io/ayatara/asset/spa.mp4" as="video" type="video/mp4">
+
     <style>
-        /* Mengunci resolusi TV di 1280x720 untuk performa stabil */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
-            width: 1280px;
-            height: 720px;
+            /* OPTIMASI 3: Gunakan Viewport Width/Height agar dinamis di layar 1080p/4K */
+            width: 100vw;
+            height: 100vh;
             background-color: #0d0d0d;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: #ffffff;
-            overflow: hidden; /* Mencegah munculnya scrollbar di TV */
+            overflow: hidden; 
             display: flex;
+            
+            /* OPTIMASI 4: Magic Code untuk menghilangkan teks pecah di TV */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         /* -------------------------------------------
@@ -30,14 +40,13 @@
             background: linear-gradient(135deg, #1a1a1a 0%, #050505 100%);
             position: relative;
             z-index: 2;
-            /* Memberikan efek bayangan agar teks seolah berada di atas video */
-            box-shadow: 20px 0 40px rgba(0,0,0,0.9); 
+            box-shadow: 15px 0 30px rgba(0,0,0,0.9); /* Sedikit ditipiskan agar ringan di GPU */
         }
 
         .hotel-brand {
             font-size: 28px;
             font-weight: bold;
-            color: #d4af37; /* Warna aksen emas */
+            color: #d4af37; 
             letter-spacing: 3px;
             margin-bottom: 40px;
             text-transform: uppercase;
@@ -72,14 +81,13 @@
             gap: 15px;
         }
 
-        /* Animasi fade in lambat agar terkesan mewah */
         .fade-in {
-            animation: fadeIn 2s ease-out forwards;
+            animation: fadeIn 1.5s ease-out forwards; /* Dipercepat sedikit agar terasa responsif */
             opacity: 0;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -96,22 +104,18 @@
         video {
             width: 100%;
             height: 100%;
-            /* object-fit: cover sangat penting agar video mengisi 
-               kolom 1/3 tanpa merusak rasio asli */
             object-fit: cover; 
             pointer-events: none;
-            /* Transisi halus saat pergantian video */
             transition: opacity 0.5s ease;
         }
 
-        /* Gradient overlay di atas video untuk blending tepi layar */
         .video-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to right, #050505 0%, rgba(0,0,0,0) 15%);
+            background: linear-gradient(to right, #050505 0%, rgba(0,0,0,0) 20%);
             z-index: 1;
         }
     </style>
@@ -133,14 +137,12 @@
 
     <div class="video-section">
         <div class="video-overlay"></div>
-        <video id="resort-video" autoplay muted playsinline src="https://wayansumalya.github.io/ayatara/asset/yoga.mp4"></video>
+        <video id="resort-video" autoplay muted playsinline preload="auto" src="https://wayansumalya.github.io/ayatara/asset/yoga.mp4"></video>
     </div>
 
 <script>
-    // 1. Tangkap elemen video
     const bgVideo = document.getElementById('resort-video');
     
-    // 2. Buat daftar (array) video yang akan diputar berurutan
     const playlist = [
         "https://wayansumalya.github.io/ayatara/asset/yoga.mp4",
         "https://wayansumalya.github.io/ayatara/asset/spa.mp4",
@@ -148,32 +150,21 @@
         "https://wayansumalya.github.io/ayatara/asset/bg_resort.mp4"
     ];
     
-    // Index video yang sedang berjalan
     let currentVideoIndex = 0;
 
-    // 3. Listener ketika sebuah video selesai diputar
     bgVideo.addEventListener('ended', function() {
-        // Efek transisi halus (menurunkan opacity sebentar)
         bgVideo.style.opacity = 0;
 
         setTimeout(() => {
-            // Pindah ke index video selanjutnya
             currentVideoIndex++;
-            
-            // Jika index melebihi jumlah video, kembalikan ke video pertama (0)
             if (currentVideoIndex >= playlist.length) {
                 currentVideoIndex = 0;
             }
             
-            // Ubah sumber video
             bgVideo.src = playlist[currentVideoIndex];
-            
-            // Mainkan video yang baru
             bgVideo.play();
-            
-            // Kembalikan opacity agar video terlihat kembali
             bgVideo.style.opacity = 1;
-        }, 300); // Jeda 300ms untuk efek fade yang mulus
+        }, 300); 
         
     }, false);
 </script>
