@@ -133,7 +133,7 @@
 
     <div class="video-section">
         <div class="video-overlay"></div>
-        <video id="resort-video" autoplay muted playsinline src="../asset/yoga.mp4"></video>
+        <video id="resort-video" autoplay muted playsinline src="https://wayansumalya.github.io/ayatara/asset/yoga.mp4"></video>
     </div>
 
 <script>
@@ -141,9 +141,7 @@
     const bgVideo = document.getElementById('resort-video');
     
     // 2. Buat daftar (array) video yang akan diputar berurutan
-    // Menggunakan local path sesuai permintaan Anda
     const playlist = [
-        "https://wayansumalya.github.io/ayatara/asset/yoga.mp4",
         "https://wayansumalya.github.io/ayatara/asset/yoga.mp4",
         "https://wayansumalya.github.io/ayatara/asset/canangsari.mp4",
         "https://wayansumalya.github.io/ayatara/asset/bg_resort.mp4"
@@ -154,7 +152,7 @@
 
     // 3. Listener ketika sebuah video selesai diputar
     bgVideo.addEventListener('ended', function() {
-        // Efek transisi halus (opsional, menurunkan opacity sebentar)
+        // Efek transisi halus (menurunkan opacity sebentar)
         bgVideo.style.opacity = 0;
 
         setTimeout(() => {
