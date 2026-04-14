@@ -2,26 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ayatara Resort Ubud - Luxury TV Display</title>
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://wayansumalya.github.io/ayatara/asset/1.jpg" as="image">
+    <link rel="preload" href="https://wayansumalya.github.io/ayatara/asset/2.jpg" as="image">
     
     <style>
         /* Base Reset */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Latar belakang wajib hitam murni untuk efek transisi */
         body, html {
+            /* OPTIMASI 3: Viewport Dinamis & Teks HD */
             width: 100vw;
             height: 100vh;
             overflow: hidden;
             background-color: #050505; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
 
         .slider-container {
@@ -31,71 +33,66 @@
         }
 
         /* --------------------------------------
-           1. UNIFORM LUXURY BACKGROUND
+           1. UNIFORM LUXURY BACKGROUND (OPTIMIZED)
         --------------------------------------- */
         .slide {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
             opacity: 0;
-            
-            /* Gerakan Murni Ke Tengah (Synchronized Central Zoom) */
-            transform: scale(1);
-            transform-origin: center center; 
-            
-            /* Color Grading: Golden Amber. 
-               Menyamakan tone semua foto agar seragam dan mewah */
-            filter: sepia(0.3) hue-rotate(-15deg) brightness(0.8) contrast(1.1); 
-            
-            /* Transisi sangat halus untuk TV */
-            transition: opacity 1.8s ease-in-out, transform 18s linear;
             z-index: 1;
-            will-change: opacity, transform, filter; 
+            /* OPTIMASI 4: Hapus Filter CSS. Transisi difokuskan hanya pada Opacity */
+            transition: opacity 1.5s ease-in-out;
+            will-change: opacity, transform; 
         }
 
         .slide.active {
             opacity: 1;
-            transform: scale(1.12); /* Zoom lambat */
             z-index: 2;
+            /* Zoom dipindah ke keyframes khusus agar dibaca GPU dengan lebih efisien */
+            animation: subtleZoom 12s linear forwards; 
+        }
+
+        @keyframes subtleZoom {
+            from { transform: scale(1); }
+            to { transform: scale(1.08); } /* Skala zoom diturunkan sedikit agar lebih elegan & ringan */
         }
 
         /* --------------------------------------
-           2. OVERLAYS & GOLD DUST
+           2. OVERLAYS & GOLD DUST (HARDWARE ACCELERATED)
         --------------------------------------- */
-        /* Vignette: Menggelapkan tepi layar agar teks di tengah bersinar */
         .vignette-overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(10,10,5,0.75) 100%);
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(10,10,5,0.85) 100%);
             z-index: 3;
+            pointer-events: none;
         }
 
-        /* Partikel Emas Mengambang (Inline SVG agar ringan di memori TV) */
-        .gold-dust-overlay {
+        /* OPTIMASI 5: Bungkus partikel dalam container raksasa */
+        .gold-dust-container {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* Pattern partikel emas */
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            pointer-events: none;
+            z-index: 4;
+            overflow: hidden;
+        }
+
+        .gold-dust-overlay {
+            width: 100%; height: 100%;
             background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNjAwIj48ZyBmaWxsPSIjRDhCMzU0IiBmaWxsLW9wYWNpdHk9IjAuNSI+PGNpcmNsZSBjeD0iMjUwIiBjeT0iMTMwIiByPSIxLjUiLz48Y2lyY2xlIGN4PSIxMDAiIGN5PSIzMDAiIHI9IjEiLz48Y2lyY2xlIGN4PSI0MDAiIGN5PSI1MDAiIHI9IjIiLz48Y2lyY2xlIGN4PSI1MDAiIGN5PSIxMDAiIHI9IjEuNSIvPjxjaXJjbGUgY3g9IjcwMCIgY3k9IjMzMCIgcj0iMSIvPjxjaXJjbGUgY3g9IjYwMCIgY3k9IjUwMCIgcj0iMiIvPjxjaXJjbGUgY3g9IjMwMCIgY3k9IjI5MCIgcj0iMS41Ii8+PGNpcmNsZSBjeD0iODgwIiBjeT0iMzA4IiByPSIxIi8+PGNpcmNsZSBjeD0iOTkwIiBjeT0iMTMyIiByPSIyIi8+PGNpcmNsZSBjeD0iMTIxIiBjeT0iOTk5IiByPSIxLjUiLz48Y2lyY2xlIGN4PSI1MzIiIGN5PSI4MjgiIHI9IjEiLz48Y2lyY2xlIGN4PSI4NzAiIGN5PSI1NjQiIHI9IjIiLz48Y2lyY2xlIGN4PSIzNDMiIGN5PSIzMTgiIHI9IjEuNSIvPjxjaXJjbGUgY3g9IjE5OCIgY3k9IjgxNyIHI9IjEiLz48Y2lyY2xlIGN4PSI3MDQiIGN5PSIyMjgiIHI9IjIiLz48L2c+PC9zdmc+');
             background-repeat: repeat;
             opacity: 0.3;
-            z-index: 4;
-            /* Pergerakan diagonal lambat */
-            animation: slowFloatingGold 60s linear infinite;
+            /* Transisi menggunakan translate3d agar diproses kartu grafis */
+            animation: driftGold 60s linear infinite;
+            will-change: transform;
         }
 
-        @keyframes slowFloatingGold {
-            0% { background-position: 0px 0px; }
-            100% { background-position: 800px -600px; }
+        @keyframes driftGold {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(15%, -15%, 0); }
         }
 
         /* --------------------------------------
@@ -103,8 +100,7 @@
         --------------------------------------- */
         .text-content {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             z-index: 5;
             text-align: center;
@@ -113,85 +109,64 @@
             pointer-events: none; 
         }
 
-        /* Setup awal sebelum animasi jalan */
-        .text-content h1, 
-        .text-content h2, 
-        .text-content p,
-        .text-content .divider {
+        .text-content h1, .text-content h2, .text-content p, .text-content .divider {
             opacity: 0;
             will-change: opacity, transform;
             transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        /* Judul: Metallic Gold Look */
         .text-content h1 {
             font-family: 'Playfair Display', serif;
             font-size: clamp(3rem, 5vw, 5.5rem);
             font-weight: 700;
-            /* Warna Emas Mewah (Metallic Gold) */
             color: #D4AF37; 
             text-transform: uppercase;
             letter-spacing: 4px; 
             margin-bottom: 5px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0px 0px 40px rgba(212, 175, 55, 0.3);
-            
             transform: translateY(30px);
-            transition: opacity 2.5s, transform 2.5s;
+            transition: opacity 2s, transform 2s; /* Dipercepat sedikit */
         }
 
-        /* Garis pemisah estetik */
         .text-content .divider {
-            width: 80px;
-            height: 2px;
+            width: 80px; height: 2px;
             background-color: #D4AF37;
             margin: 15px auto 25px auto;
             box-shadow: 0px 0px 10px rgba(212, 175, 55, 0.5);
-            
             transform: scaleX(0);
-            transition: opacity 2.5s 0.6s, transform 2.5s 0.6s;
+            transition: opacity 2s 0.5s, transform 2s 0.5s;
         }
 
-        /* Subjudul */
         .text-content h2 {
             font-family: 'Playfair Display', serif;
             font-size: clamp(1.5rem, 2.5vw, 2.5rem);
-            font-style: italic;
-            font-weight: 400;
-            color: #F8F4E6; /* Putih sedikit hangat */
+            font-style: italic; font-weight: 400;
+            color: #F8F4E6; 
             margin-bottom: 35px;
             text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
-            
             transform: translateY(15px);
-            transition: opacity 2.5s 1.2s, transform 2.5s 1.2s;
+            transition: opacity 2s 1s, transform 2s 1s;
         }
 
-        /* Paragraf */
         .text-content p {
             font-family: 'Montserrat', sans-serif;
             font-size: clamp(1.1rem, 1.5vw, 1.5rem);
-            line-height: 2;
-            font-weight: 300;
+            line-height: 2; font-weight: 300;
             color: #E8E8E8;
-            max-width: 950px;
-            margin: 0 auto;
+            max-width: 950px; margin: 0 auto;
             text-shadow: 2px 2px 5px rgba(0,0,0,1);
-            
             transform: translateY(20px);
-            transition: opacity 2.5s 1.8s, transform 2.5s 1.8s;
+            transition: opacity 2s 1.5s, transform 2s 1.5s;
         }
 
-        /* Pemicu animasi saat halaman selesai diload (Mencegah patah-patah di awal) */
         body.loaded .text-content h1,
         body.loaded .text-content h2,
         body.loaded .text-content p {
-            opacity: 1;
-            transform: translateY(0);
+            opacity: 1; transform: translateY(0);
         }
         body.loaded .text-content .divider {
-            opacity: 1;
-            transform: scaleX(1);
+            opacity: 1; transform: scaleX(1);
         }
-
     </style>
 </head>
 <body>
@@ -204,7 +179,10 @@
         <div class="slide" style="background-image: url('https://wayansumalya.github.io/ayatara/asset/5.jpg');"></div>
         
         <div class="vignette-overlay"></div>
-        <div class="gold-dust-overlay"></div>
+        
+        <div class="gold-dust-container">
+            <div class="gold-dust-overlay"></div>
+        </div>
 
         <div class="text-content">
             <h1>AYATARA RESORT UBUD</h1>
@@ -219,7 +197,6 @@
     </div>
 
     <script>
-        // Memastikan animasi teks HANYA berjalan saat semua file beres dimuat
         window.addEventListener('load', function() {
             document.body.classList.add('loaded');
         });
@@ -227,13 +204,12 @@
         const slides = document.querySelectorAll('.slide');
         let currentSlide = 0;
         
-        const slideDuration = 8000; // Tahan tiap gambar selama 8 detik
-        const blackScreenDelay = 1500; // Jeda layar hitam antar gambar untuk istirahat mata (1.5 detik)
+        const slideDuration = 8000; 
+        const blackScreenDelay = 1500; 
 
         function nextSlide() {
             slides[currentSlide].classList.remove('active');
             
-            // Tunggu layar menggelap sempurna sebelum memuat gambar baru
             setTimeout(() => {
                 currentSlide = (currentSlide + 1) % slides.length;
                 slides[currentSlide].classList.add('active');
