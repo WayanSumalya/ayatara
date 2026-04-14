@@ -100,6 +100,8 @@
                kolom 1/3 tanpa merusak rasio asli */
             object-fit: cover; 
             pointer-events: none;
+            /* Transisi halus saat pergantian video */
+            transition: opacity 0.5s ease;
         }
 
         /* Gradient overlay di atas video untuk blending tepi layar */
@@ -110,6 +112,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(to right, #050505 0%, rgba(0,0,0,0) 15%);
+            z-index: 1;
         }
     </style>
 </head>
@@ -117,7 +120,7 @@
 
     <div class="welcome-section">
         <div class="fade-in">
-            <div class="hotel-brand">THE HOTEL</div>
+            <div class="hotel-brand">AYATARA RESORT UBUD</div>
             <h1>Welcome, <span class="guest-name">John Doe</span></h1>
             <p class="message">
                 Kami sangat senang menyambut Anda. Nikmati kenyamanan fasilitas kelas dunia dan layanan tanpa batas selama Anda menginap bersama kami. 
@@ -130,17 +133,48 @@
 
     <div class="video-section">
         <div class="video-overlay"></div>
-      <video id="resort-video" autoplay loop muted playsinline>
-            <source src="https://wayansumalya.github.io/ayatara/asset/bg_resort.mp4" type="video/mp4">
-     </video>
+        <video id="resort-video" autoplay muted playsinline src="../asset/yoga.mp4"></video>
     </div>
+
 <script>
-    // Memastikan TV mengulang video jika atribut 'loop' bawaan gagal bekerja
+    // 1. Tangkap elemen video
     const bgVideo = document.getElementById('resort-video');
     
+    // 2. Buat daftar (array) video yang akan diputar berurutan
+    // Menggunakan local path sesuai permintaan Anda
+    const playlist = [
+        "../asset/yoga.mp4",
+        "../asset/canangsari.mp4",
+        "../asset/bg_resort.mp4"
+    ];
+    
+    // Index video yang sedang berjalan
+    let currentVideoIndex = 0;
+
+    // 3. Listener ketika sebuah video selesai diputar
     bgVideo.addEventListener('ended', function() {
-        this.currentTime = 0; // Kembalikan ke detik ke-0
-        this.play();          // Putar paksa
+        // Efek transisi halus (opsional, menurunkan opacity sebentar)
+        bgVideo.style.opacity = 0;
+
+        setTimeout(() => {
+            // Pindah ke index video selanjutnya
+            currentVideoIndex++;
+            
+            // Jika index melebihi jumlah video, kembalikan ke video pertama (0)
+            if (currentVideoIndex >= playlist.length) {
+                currentVideoIndex = 0;
+            }
+            
+            // Ubah sumber video
+            bgVideo.src = playlist[currentVideoIndex];
+            
+            // Mainkan video yang baru
+            bgVideo.play();
+            
+            // Kembalikan opacity agar video terlihat kembali
+            bgVideo.style.opacity = 1;
+        }, 300); // Jeda 300ms untuk efek fade yang mulus
+        
     }, false);
 </script>
 </body>
