@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinematic IPTV Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --bg-dark: #050505;
+            --text-light: #f5f5f5;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1a1a1a 0%, #000000 100%);
+            color: var(--text-light);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            gap: 30px;
+        }
+
+        /* Panel Kiri: Sidebar Menu */
+        .channel-sidebar {
+            width: 400px;
+            background: linear-gradient(180deg, rgba(15,15,15,0.95) 0%, rgba(5,5,5,0.95) 100%);
+            border: 1px solid rgba(212, 175, 55, 0.1);
+            border-radius: 16px;
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 15px 0 40px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease;
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+        }
+
+        .brand-header h1 {
+            font-size: 26px;
+            font-weight: 300;
+            letter-spacing: 5px;
+            color: var(--primary-gold);
+            text-transform: uppercase;
+        }
+
+        /* Navigasi Kategori */
+        .category-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative; /* Penting untuk perhitungan offset matematis */
+            scroll-behavior: smooth;
+        }
+
+        .category-container::-webkit-scrollbar { display: none; }
+
+        .category-tab {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            color: #888;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .category-tab.active {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--primary-gold);
+            border: 1px solid var(--primary-gold);
+        }
+
+        .category-tab:focus {
+            background: var(--primary-gold);
+            color: #000;
+            outline: none;
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Daftar Channel */
+        .channel-list {
+            overflow-y: auto;
+            padding-right: 5px;
+            flex: 1;
+            scroll-behavior: smooth; 
+        }
+
+        .channel-list::-webkit-scrollbar { width: 4px; }
+        .channel-list::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.5);
+            border-radius: 10px;
+        }
+
+        .channel-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: transparent;
+            border: 1px solid transparent;
+            position: relative;
+        }
+
+        .channel-item:hover, .channel-item:focus {
+            background: linear-gradient(90deg, rgba(212, 175, 55, 0.2) 0%, rgba(0,0,0,0) 100%);
+            border-left: 4px solid var(--primary-gold);
+            outline: none; 
+            transform: translateX(10px);
+        }
+
+        .channel-logo {
+            width: 55px;
+            height: 55px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-right: 15px;
+            background: #111;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .channel-info { flex: 1; }
+
+        .channel-info h3 {
+            font-size: 16px;
+            font-weight: 500;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .channel-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .channel-meta p {
+            font-size: 12px;
+            color: var(--primary-gold);
+            font-weight: bold;
+        }
+
+        /* Area Player Kanan */
+        .preview-area {
+            flex: 1;
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(212, 175, 55, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 5;
+        }
+
+        .preview-area.modal-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            z-index: 9999;
+            border: none;
+        }
+
+        video { width: 100%; height: 100%; object-fit: cover; }
+
+        .preview-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 40px 30px 30px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+            pointer-events: none;
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            transition: opacity 0.5s ease;
+        }
+
+        .preview-text h2 {
+            font-size: 32px;
+            font-weight: 300;
+            margin-bottom: 5px;
+            color: #fff;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.8);
+        }
+
+        .preview-text p {
+            color: var(--primary-gold);
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .instruction-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid var(--primary-gold);
+            color: var(--primary-gold);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 13px;
+            letter-spacing: 1px;
+            pointer-events: none;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.5s ease;
+        }
+
+        .numpad-indicator {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 40px;
+            color: var(--primary-gold);
+            font-weight: bold;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.9);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+            z-index: 10000;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="channel-sidebar" id="sidebarMenu">
+            <div class="brand-header">
+                <h1>LIVE TV</h1>
+            </div>
+            
+            <div class="category-container" id="categoryTabs"></div>
+            <div class="channel-list" id="channel-list-container"></div>
+        </div>
+
+        <div class="preview-area" id="videoWrapper">
+            <video id="tvPlayer" playsinline></video>
+            
+            <div class="instruction-badge" id="instructionBadge">PRESS OK FOR FULLSCREEN</div>
+            <div class="numpad-indicator" id="numpadIndicator"></div>
+            
+            <div class="preview-overlay" id="previewOverlay" style="opacity: 0;">
+                <img src="" id="overlayLogo" class="channel-logo">
+                <div class="preview-text">
+                    <h2 id="overlayTitle">Channel Name</h2>
+                    <p id="overlaySub">NOW PLAYING</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database Original 45 Channel
+        const allChannels = [
+            { id: 1, name: "CCM", group: "Movies", url: "http://157.66.14.66:7635/ccm/ccm.m3u8" },
+            { id: 2, name: "Celestial Movies", group: "Movies", url: "http://157.66.14.66:7635/celestialmovies/celestialmovies.m3u8" },
+            { id: 3, name: "KIX", group: "Movies", url: "http://157.66.14.66:7635/kix/kix.m3u8" },
+            { id: 4, name: "Citra Bioskop", group: "Movies", url: "http://157.66.14.66:7635/citrabioskop/citrabioskop.m3u8" },
+            { id: 5, name: "Thrill", group: "Movies", url: "http://157.66.14.66:7635/thrill/thrill.m3u8" },
+            { id: 6, name: "Zee Bioskop", group: "Movies", url: "http://157.66.14.66:7635/zeebioskop/zeebioskop.m3u8" },
+            { id: 7, name: "Rock Action", group: "Movies", url: "http://157.66.14.66:7635/rockaction/rockaction.m3u8" },
+            { id: 8, name: "Rock Entertainment", group: "Movies", url: "http://157.66.14.66:7635/rockentertainment/rockentertainment.m3u8" },
+            { id: 9, name: "RT News", group: "News", url: "http://157.66.14.66:7635/rtnews/rtnews.m3u8" },
+            { id: 10, name: "BBC News", group: "News", url: "http://157.66.14.66:7635/bbcnews/bbcnews.m3u8" },
+            { id: 11, name: "CNA", group: "News", url: "http://157.66.14.66:7635/cna/cna.m3u8" },
+            { id: 12, name: "Al Jazeera", group: "News", url: "http://157.66.14.66:7635/aljazeera/aljazeera.m3u8" },
+            { id: 13, name: "HGTV", group: "Lifestyle", url: "http://157.66.14.66:7635/hgtv/hgtv.m3u8" },
+            { id: 14, name: "AFC", group: "Lifestyle", url: "http://157.66.14.66:7635/afn/afn.m3u8" },
+            { id: 15, name: "BBC Life", group: "Lifestyle", url: "http://157.66.14.66:7635/bbclefestyle/bbclefestyle.m3u8" },
+            { id: 16, name: "BBC Earth", group: "Documentary", url: "http://157.66.14.66:7635/bbcearth/bbcearth.m3u8" },
+            { id: 17, name: "Discovery", group: "Documentary", url: "http://157.66.14.66:7635/discovery/discovery.m3u8" },
+            { id: 18, name: "Animal Planet", group: "Documentary", url: "http://157.66.14.66:7635/animalplanet/animalplanet.m3u8" },
+            { id: 19, name: "Nickelodeon", group: "Kids", url: "http://157.66.14.66:7635/nickelodeon/nickelodeon.m3u8" },
+            { id: 20, name: "Nick Jr", group: "Kids", url: "http://157.66.14.66:7635/nickjr/nickjr.m3u8" },
+            { id: 21, name: "DreamWorks", group: "Kids", url: "http://157.66.14.66:7635/dreamworks/dreamworks.m3u8" },
+            { id: 22, name: "Zoomoo", group: "Kids", url: "http://157.66.14.66:7635/zoomoo/zoomoo.m3u8" },
+            { id: 23, name: "TVN", group: "Movies", url: "http://157.66.14.66:7635/tvn/tvn.m3u8" },
+            { id: 24, name: "TVRI World", group: "News", url: "http://157.66.14.66:7635/tvrinas/tvrinas.m3u8" },
+            { id: 25, name: "NHK World", group: "News", url: "http://157.66.14.66:7635/nhkworld/nhkworld.m3u8" },
+            { id: 26, name: "Red Bull TV", group: "Sports", url: "http://157.66.14.66:7635/redbull/redbull.m3u8" },
+            { id: 27, name: "SCTV", group: "Indonesia", url: "http://157.66.14.66:7635/sctv/sctv.m3u8" },
+            { id: 28, name: "Moji", group: "Indonesia", url: "http://157.66.14.66:7635/moji/moji.m3u8" },
+            { id: 29, name: "Mentari TV", group: "Indonesia", url: "http://157.66.14.66:7635/mentaritv/mentaritv.m3u8" },
+            { id: 30, name: "Trans TV", group: "Indonesia", url: "http://157.66.14.66:7635/transtv/transtv.m3u8" },
+            { id: 31, name: "Trans 7", group: "Indonesia", url: "http://157.66.14.66:7635/trans7/trans7.m3u8" },
+            { id: 32, name: "Madinah TV", group: "Religious", url: "http://157.66.14.66:7635/madinahtv/madinahtv.m3u8" },
+            { id: 33, name: "Mekkah TV", group: "Religious", url: "http://157.66.14.66:7635/mekkahtv2/mekkahtv2.m3u8" },
+            { id: 34, name: "Rodja TV", group: "Religious", url: "http://157.66.14.66:7635/rodjatv/rodjatv.m3u8" },
+            { id: 35, name: "RCTI", group: "Indonesia", url: "http://157.66.14.66:7635/rcti/rcti.m3u8" },
+            { id: 36, name: "MNCTV", group: "Indonesia", url: "http://157.66.14.66:7635/mnctv/mnctv.m3u8" },
+            { id: 37, name: "Global TV", group: "Indonesia", url: "http://157.66.14.66:7635/globaltv/globaltv.m3u8" },
+            { id: 38, name: "iNews", group: "News", url: "http://157.66.14.66:7635/inews/inews.m3u8" },
+            { id: 39, name: "ANTV", group: "Indonesia", url: "http://157.66.14.66:7635/antv/antv.m3u8" },
+            { id: 40, name: "TV One", group: "Indonesia", url: "http://157.66.14.66:7635/tvone/tvone.m3u8" },
+            { id: 41, name: "Kompas TV", group: "News", url: "http://157.66.14.66:7635/kompastv/kompastv.m3u8" },
+            { id: 42, name: "Metro TV", group: "News", url: "http://157.66.14.66:7635/metrotv/metrotv.m3u8" },
+            { id: 43, name: "Phoenix China", group: "News", url: "http://157.66.14.66:7635/phoenix/phoenix.m3u8" },
+            { id: 44, name: "DW TV", group: "News", url: "http://157.66.14.66:7635/dwtv/dwtv.m3u8" },
+            { id: 45, name: "Arirang TV", group: "News", url: "http://157.66.14.66:7635/arirang/arirang.m3u8" }
+        ];
+
+        // Status Sistem & Kategori
+        const categories = ["All", ...new Set(allChannels.map(c => c.group))];
+        let currentCategoryIndex = 0;
+        let filteredChannels = [...allChannels];
+        let activeChannelIndex = 0; 
+
+        // Referensi UI
+        const categoryTabsContainer = document.getElementById('categoryTabs');
+        const channelContainer = document.getElementById('channel-list-container');
+        const videoElement = document.getElementById('tvPlayer');
+        const videoWrapper = document.getElementById('videoWrapper');
+        const sidebarMenu = document.getElementById('sidebarMenu');
+        const previewOverlay = document.getElementById('previewOverlay');
+        const overlayLogo = document.getElementById('overlayLogo');
+        const overlayTitle = document.getElementById('overlayTitle');
+        const overlaySub = document.getElementById('overlaySub');
+        const instructionBadge = document.getElementById('instructionBadge');
+        const numpadIndicator = document.getElementById('numpadIndicator');
+        
+        let hls = null;
+        let channelElements = [];
+        let categoryElements = [];
+        let isModalFullscreen = false; 
+        
+        let currentUrl = "";
+        let osdTimeout; 
+        let numpadTimeout;
+        let typedChannelNumber = "";
+
+        function generateLogo(name) {
+            const encodedName = encodeURIComponent(name);
+            return `https://ui-avatars.com/api/?name=${encodedName}&background=111&color=D4AF37&bold=true&font-size=0.4`;
+        }
+
+        // --- SISTEM KATEGORI (RENDER & FILTER) ---
+        function renderCategoryTabs() {
+            categoryTabsContainer.innerHTML = '';
+            categoryElements = [];
+            
+            categories.forEach((cat, index) => {
+                const btn = document.createElement('div');
+                btn.className = `category-tab ${index === currentCategoryIndex ? 'active' : ''}`;
+                btn.innerText = cat === "All" ? "Semua Channel" : cat;
+                
+                // Menghapus tabIndex agar fokus murni ditangani oleh javascript logika silang
+                // Ini mencegah remote TV secara tidak sengaja "tersangkut" di menu atas
+                btn.dataset.index = index;
+
+                btn.addEventListener('click', () => {
+                    changeCategory(index);
+                });
+
+                categoryTabsContainer.appendChild(btn);
+                categoryElements.push(btn);
+            });
+        }
+
+        // --- PERBAIKAN: GULIR MATEMATIS PRESISI UNTUK TAB KATEGORI ---
+        function updateTabUI() {
+            categoryElements.forEach((el, idx) => {
+                el.classList.toggle('active', idx === currentCategoryIndex);
+            });
+            
+            const activeTab = categoryElements[currentCategoryIndex];
+            if(activeTab) {
+                // Menggunakan scroll matematis agar posisi tab terpilih otomatis ke tengah
+                // Ini memperbaiki bug di Smart TV di mana scrollIntoView sering diabaikan
+                const containerWidth = categoryTabsContainer.offsetWidth;
+                const tabOffsetLeft = activeTab.offsetLeft;
+                const tabWidth = activeTab.offsetWidth;
+                
+                const scrollPos = tabOffsetLeft - (containerWidth / 2) + (tabWidth / 2);
+                
+                // Setel posisi scroll
+                categoryTabsContainer.scrollTo({
+                    left: scrollPos,
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        function filterChannelsByCategory(category) {
+            if (category === "All") {
+                filteredChannels = [...allChannels];
+            } else {
+                filteredChannels = allChannels.filter(c => c.group === category);
+            }
+            renderChannels(); 
+            
+            if (filteredChannels.length > 0) {
+                activeChannelIndex = 0;
+                loadChannelToPlayer(0, false); 
+            }
+        }
+
+        function changeCategory(newIndex) {
+            if(newIndex >= categories.length) newIndex = 0;
+            if(newIndex < 0) newIndex = categories.length - 1;
+            
+            currentCategoryIndex = newIndex;
+            filterChannelsByCategory(categories[currentCategoryIndex]);
+            updateTabUI();
+            
+            // Otomatis menaruh sorotan remote ke channel pertama
+            setTimeout(() => {
+                if (channelElements.length > 0) {
+                    channelElements[0].focus();
+                }
+            }, 50);
+        }
+
+        // --- SISTEM RENDER CHANNEL ---
+        function renderChannels() {
+            channelContainer.innerHTML = '';
+            channelElements = [];
+            
+            filteredChannels.forEach((channel, index) => {
+                const div = document.createElement('div');
+                div.className = 'channel-item';
+                div.tabIndex = 0; 
+                div.dataset.index = index; 
+                
+                div.innerHTML = `
+                    <img src="${generateLogo(channel.name)}" class="channel-logo" alt="${channel.name}">
+                    <div class="channel-info">
+                        <h3>${channel.name}</h3>
+                        <div class="channel-meta">
+                            <p>CH-${channel.id.toString().padStart(3, '0')}</p>
+                        </div>
+                    </div>
+                `;
+
+                const handleFocus = () => {
+                    if (!isModalFullscreen) {
+                        loadChannelToPlayer(index, true);
+                    }
+                };
+
+                div.addEventListener('mouseenter', handleFocus);
+                div.addEventListener('focus', handleFocus);
+                div.addEventListener('click', toggleModalFullscreen);
+
+                channelContainer.appendChild(div);
+                channelElements.push(div);
+            });
+        }
+
+        // --- SISTEM PLAYER & OSD ---
+        function loadChannelToPlayer(index, syncSidebar = true) {
+            if (index < 0) index = filteredChannels.length - 1; 
+            if (index >= filteredChannels.length) index = 0; 
+            
+            const channel = filteredChannels[index];
+            activeChannelIndex = index;
+
+            if (currentUrl !== channel.url) {
+                playStream(channel.url);
+                currentUrl = channel.url;
+                
+                overlayLogo.src = generateLogo(channel.name);
+                overlayTitle.innerText = channel.name;
+                overlaySub.innerText = `CH-${channel.id.toString().padStart(3, '0')} • ${channel.group}`;
+                
+                previewOverlay.style.opacity = 1;
+                instructionBadge.style.opacity = 1;
+
+                if (isModalFullscreen) {
+                    instructionBadge.innerHTML = "PRESS ◄ ► OR ▲ ▼ TO CHANGE CHANNEL &nbsp;|&nbsp; PRESS OK FOR MENU";
+                    clearTimeout(osdTimeout);
+                    osdTimeout = setTimeout(() => {
+                        if (isModalFullscreen) {
+                            previewOverlay.style.opacity = 0;
+                            instructionBadge.style.opacity = 0;
+                        }
+                    }, 5000); 
+                } else {
+                    instructionBadge.innerHTML = "PRESS OK FOR FULLSCREEN";
+                }
+
+                if (syncSidebar && !isModalFullscreen && channelElements[index]) {
+                    channelElements[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function attemptPlay() {
+            videoElement.muted = false; 
+            const playPromise = videoElement.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn("Autoplay diblokir, mengaktifkan mode senyap.");
+                    videoElement.muted = true;
+                    videoElement.play();
+                });
+            }
+        }
+
+        function playStream(url) {
+            if (Hls.isSupported()) {
+                if (hls) hls.destroy();
+                hls = new Hls({ maxBufferLength: 30 });
+                hls.loadSource(url);
+                hls.attachMedia(videoElement);
+                hls.on(Hls.Events.MANIFEST_PARSED, attemptPlay);
+            } else if (videoElement.canPlayType('application/vnd.apple.mpegurl')) {
+                videoElement.src = url;
+                videoElement.addEventListener('loadedmetadata', attemptPlay);
+            }
+        }
+
+        function toggleModalFullscreen() {
+            if (!isModalFullscreen) {
+                isModalFullscreen = true;
+                videoWrapper.classList.add('modal-fullscreen');
+                sidebarMenu.style.transform = "translateX(-150%)"; 
+                
+                videoElement.muted = false; 
+                loadChannelToPlayer(activeChannelIndex, false); 
+            } else {
+                isModalFullscreen = false;
+                videoWrapper.classList.remove('modal-fullscreen');
+                sidebarMenu.style.transform = "translateX(0)"; 
+                
+                videoElement.muted = false; 
+                clearTimeout(osdTimeout);
+                
+                previewOverlay.style.opacity = 1; 
+                instructionBadge.innerHTML = "PRESS OK FOR FULLSCREEN";
+                instructionBadge.style.opacity = 1;
+                
+                const targetElement = channelElements[activeChannelIndex];
+                if(targetElement) {
+                    setTimeout(() => { 
+                        targetElement.focus(); 
+                        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
+            }
+        }
+
+        // --- KENDALI NAVIGASI REMOTE TV BARU ---
+        document.addEventListener('keydown', function(e) {
+            const activeElement = document.activeElement;
+            const isChannelFocused = activeElement && activeElement.classList.contains('channel-item');
+
+            // 1. NAVIGASI ANGKA (NUMPAD)
+            if (e.key >= '0' && e.key <= '9') {
+                typedChannelNumber += e.key;
+                numpadIndicator.innerText = typedChannelNumber;
+                numpadIndicator.style.opacity = 1;
+
+                clearTimeout(numpadTimeout);
+                numpadTimeout = setTimeout(() => {
+                    let targetId = parseInt(typedChannelNumber);
+                    let targetChannel = allChannels.find(c => c.id === targetId);
+                    
+                    if (targetChannel) {
+                        if (categories[currentCategoryIndex] !== targetChannel.group && categories[currentCategoryIndex] !== "All") {
+                            changeCategory(categories.indexOf(targetChannel.group));
+                        }
+                        
+                        let foundIndex = filteredChannels.findIndex(c => c.id === targetId);
+                        if (foundIndex !== -1) {
+                            loadChannelToPlayer(foundIndex, true); 
+                            if (!isModalFullscreen && channelElements[foundIndex]) {
+                                channelElements[foundIndex].focus();
+                            }
+                        }
+                    } else {
+                        numpadIndicator.innerText = "NOT FOUND";
+                    }
+                    
+                    setTimeout(() => { numpadIndicator.style.opacity = 0; typedChannelNumber = ""; }, 1500);
+
+                }, 1000); 
+                return;
+            }
+
+            // 2. NAVIGASI LINTAS KATEGORI & CHANNEL TERPADU
+            if (!isModalFullscreen) {
+                // KIRI / KANAN = PINDAH KATEGORI (Dari manapun di dalam menu)
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (e.key === 'ArrowRight') {
+                        changeCategory(currentCategoryIndex + 1);
+                    } else {
+                        changeCategory(currentCategoryIndex - 1);
+                    }
+                } 
+                // BAWAH = SUSURI DAFTAR CHANNEL KE BAWAH
+                else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (isChannelFocused) {
+                        let nextIndex = parseInt(activeElement.dataset.index) + 1;
+                        if (nextIndex >= channelElements.length) nextIndex = 0; 
+                        channelElements[nextIndex].focus();
+                    } else if (channelElements.length > 0) {
+                        channelElements[0].focus();
+                    }
+                } 
+                // ATAS = SUSURI DAFTAR CHANNEL KE ATAS
+                else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (isChannelFocused) {
+                        let prevIndex = parseInt(activeElement.dataset.index) - 1;
+                        if (prevIndex < 0) prevIndex = channelElements.length - 1; // Looping ke channel terbawah
+                        channelElements[prevIndex].focus();
+                    }
+                }
+            } else {
+                // 3. NAVIGASI MODE FULLSCREEN
+                if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    loadChannelToPlayer(activeChannelIndex + 1, false);
+                } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    loadChannelToPlayer(activeChannelIndex - 1, false);
+                }
+            }
+
+            // 4. TOMBOL OK / ENTER
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                toggleModalFullscreen();
+            }
+            
+            // 5. TOMBOL BACK / RETURN
+            if (e.keyCode === 461 || e.keyCode === 10009 || e.key === 'Escape' || e.key === 'Backspace') {
+                if (isModalFullscreen) {
+                    e.preventDefault();
+                    toggleModalFullscreen();
+                }
+            }
+        }, { capture: true }); 
+
+        // Inisialisasi Aplikasi
+        renderCategoryTabs();
+        changeCategory(0); // Tampilkan kategori "All" pertama kali
+        
+    </script>
+</body>
+</html>
